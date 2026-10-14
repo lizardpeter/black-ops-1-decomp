@@ -34,7 +34,6 @@ import ghidra.program.model.symbol.Reference;
 import ghidra.program.model.symbol.Symbol;
 import ghidra.program.model.symbol.SymbolIterator;
 import ghidra.program.model.symbol.SymbolType;
-import ghidra.program.util.DefinedDataIterator;
 
 public class ExportAll extends GhidraScript {
 
@@ -155,7 +154,10 @@ public class ExportAll extends GhidraScript {
 		// strings.tsv
 		try (Writer tw = new BufferedWriter(new FileWriter(new File(out, "strings.tsv")))) {
 			tw.write("va\ttype\tvalue\n");
-			for (Data d : DefinedDataIterator.definedStrings(currentProgram)) {
+			for (Data d : listing.getDefinedData(true)) {
+				if (!d.hasStringValue()) {
+					continue;
+				}
 				Object v = d.getValue();
 				tw.write(hex(d.getAddress()) + "\t" + clean(d.getDataType().getName()) + "\t"
 						+ clean(v == null ? "" : v.toString().replace("\\", "\\\\")) + "\n");
