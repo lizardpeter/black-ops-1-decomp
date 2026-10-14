@@ -186,7 +186,7 @@ LAB_00a10070:
   00A10075  5D                   POP EBP
   00A10076  C20800               RET 0x8
 
-; 009E1DE0  operator_delete  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/new:63)
+; 009E1DE0  operator_delete  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/new:63)
   009E1DE0  C3                   RET
 
 ; 00A0F9B0  phys_memory_manager  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:144)

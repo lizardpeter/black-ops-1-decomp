@@ -4343,7 +4343,7 @@ LAB_00a94f7d:
   00A94F8E  5D                   POP EBP
   00A94F8F  C3                   RET
 
-; 00AA0B20  _Adjust_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 00AA0B20  _Adjust_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   00AA0B20  55                   PUSH EBP
   00AA0B21  8BEC                 MOV EBP,ESP
   00AA0B23  83EC24               SUB ESP,0x24
@@ -4481,7 +4481,7 @@ LAB_00aa0c62:
   00AA0C80  5D                   POP EBP
   00AA0C81  C3                   RET
 
-; 00AA0D40  _Adjust_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 00AA0D40  _Adjust_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   00AA0D40  55                   PUSH EBP
   00AA0D41  8BEC                 MOV EBP,ESP
   00AA0D43  83EC60               SUB ESP,0x60
@@ -4606,7 +4606,7 @@ LAB_00aa0e5c:
   00AA0E73  5D                   POP EBP
   00AA0E74  C3                   RET
 
-; 00AA0F20  _Adjust_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 00AA0F20  _Adjust_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   00AA0F20  55                   PUSH EBP
   00AA0F21  8BEC                 MOV EBP,ESP
   00AA0F23  81EC90000000         SUB ESP,0x90
@@ -4860,7 +4860,7 @@ LAB_00a95055:
   00A9512C  5D                   POP EBP
   00A9512D  C3                   RET
 
-; 00A9E750  make_heap<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 00A9E750  make_heap<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   00A9E750  55                   PUSH EBP
   00A9E751  8BEC                 MOV EBP,ESP
   00A9E753  83EC48               SUB ESP,0x48
@@ -4925,7 +4925,7 @@ LAB_00a9e7f2:
   00A9E7F4  5D                   POP EBP
   00A9E7F5  C3                   RET
 
-; 00A9EC60  make_heap<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 00A9EC60  make_heap<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   00A9EC60  53                   PUSH EBX
   00A9EC61  8BDC                 MOV EBX,ESP
   00A9EC63  83EC08               SUB ESP,0x8
@@ -4997,7 +4997,7 @@ LAB_00a9ed01:
   00A9ED08  5B                   POP EBX
   00A9ED09  C3                   RET
 
-; 00A9F1B0  make_heap<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 00A9F1B0  make_heap<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   00A9F1B0  55                   PUSH EBP
   00A9F1B1  8BEC                 MOV EBP,ESP
   00A9F1B3  81EC20010000         SUB ESP,0x120
@@ -5229,7 +5229,7 @@ LAB_00a95321:
   00A9532D  5D                   POP EBP
   00A9532E  C3                   RET
 
-; 00A9F9E0  _Sort_heap<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2232)
+; 00A9F9E0  _Sort_heap<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2232)
   00A9F9E0  55                   PUSH EBP
   00A9F9E1  8BEC                 MOV EBP,ESP
   00A9F9E3  83EC48               SUB ESP,0x48
@@ -5307,7 +5307,7 @@ LAB_00a9faa8:
   00A9FAAA  5D                   POP EBP
   00A9FAAB  C3                   RET
 
-; 00AA0180  _Sort_heap<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2232)
+; 00AA0180  _Sort_heap<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2232)
   00AA0180  53                   PUSH EBX
   00AA0181  8BDC                 MOV EBX,ESP
   00AA0183  83EC08               SUB ESP,0x8
@@ -5388,7 +5388,7 @@ LAB_00aa0240:
   00AA0247  5B                   POP EBX
   00AA0248  C3                   RET
 
-; 00AA0930  _Sort_heap<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2232)
+; 00AA0930  _Sort_heap<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2232)
   00AA0930  55                   PUSH EBP
   00AA0931  8BEC                 MOV EBP,ESP
   00AA0933  81EC24010000         SUB ESP,0x124
@@ -8408,7 +8408,7 @@ LAB_00a96620:
   00A9662A  5D                   POP EBP
   00A9662B  C3                   RET
 
-; 00A9FAB0  _Insertion_sort1<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&),AnnotatedLightGridPoint>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 00A9FAB0  _Insertion_sort1<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&),AnnotatedLightGridPoint>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   00A9FAB0  55                   PUSH EBP
   00A9FAB1  8BEC                 MOV EBP,ESP
   00A9FAB3  83EC4C               SUB ESP,0x4c
@@ -8511,7 +8511,7 @@ LAB_00a9fbae:
   00A9FBBA  5D                   POP EBP
   00A9FBBB  C3                   RET
 
-; 00AA0250  _Insertion_sort1<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&),GfxSurface>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 00AA0250  _Insertion_sort1<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&),GfxSurface>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   00AA0250  53                   PUSH EBX
   00AA0251  8BDC                 MOV EBX,ESP
   00AA0253  83EC08               SUB ESP,0x8
@@ -8608,7 +8608,7 @@ LAB_00aa0333:
   00AA033A  5B                   POP EBX
   00AA033B  C3                   RET
 
-; 00AA0A10  _Insertion_sort1<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&),GfxStaticModelCombinedInst>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 00AA0A10  _Insertion_sort1<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&),GfxStaticModelCombinedInst>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   00AA0A10  55                   PUSH EBP
   00AA0A11  8BEC                 MOV EBP,ESP
   00AA0A13  81ECBC000000         SUB ESP,0xbc
@@ -8702,7 +8702,7 @@ LAB_00aa0b0e:
   00AA0B1C  5D                   POP EBP
   00AA0B1D  C3                   RET
 
-; 00A9F260  _Median<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 00A9F260  _Median<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   00A9F260  55                   PUSH EBP
   00A9F261  8BEC                 MOV EBP,ESP
   00A9F263  81EC14010000         SUB ESP,0x114
@@ -9299,7 +9299,7 @@ LAB_00a9f9c9:
   00A9F9D5  5D                   POP EBP
   00A9F9D6  C3                   RET
 
-; 00A9FBC0  _Median<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 00A9FBC0  _Median<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   00A9FBC0  53                   PUSH EBX
   00A9FBC1  8BDC                 MOV EBX,ESP
   00A9FBC3  83EC08               SUB ESP,0x8
@@ -9753,7 +9753,7 @@ LAB_00aa0169:
   00AA0170  5B                   POP EBX
   00AA0171  C3                   RET
 
-; 00AA0340  _Median<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 00AA0340  _Median<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   00AA0340  55                   PUSH EBP
   00AA0341  8BEC                 MOV EBP,ESP
   00AA0343  81EC68070000         SUB ESP,0x768
@@ -10204,7 +10204,7 @@ LAB_00aa0916:
   00AA0924  5D                   POP EBP
   00AA0925  C3                   RET
 
-; 00A9E1E0  _Unguarded_partition<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 00A9E1E0  _Unguarded_partition<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   00A9E1E0  55                   PUSH EBP
   00A9E1E1  8BEC                 MOV EBP,ESP
   00A9E1E3  81ECEC000000         SUB ESP,0xec
@@ -10642,7 +10642,7 @@ LAB_00a9e737:
   00A9E743  5D                   POP EBP
   00A9E744  C3                   RET
 
-; 00A9E800  _Unguarded_partition<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 00A9E800  _Unguarded_partition<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   00A9E800  53                   PUSH EBX
   00A9E801  8BDC                 MOV EBX,ESP
   00A9E803  83EC08               SUB ESP,0x8
@@ -11017,7 +11017,7 @@ LAB_00a9ec53:
   00A9EC5A  5B                   POP EBX
   00A9EC5B  C3                   RET
 
-; 00A9ED10  _Unguarded_partition<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 00A9ED10  _Unguarded_partition<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   00A9ED10  55                   PUSH EBP
   00A9ED11  8BEC                 MOV EBP,ESP
   00A9ED13  81EC24050000         SUB ESP,0x524
@@ -11389,7 +11389,7 @@ LAB_00a9f18e:
   00A9F19F  5D                   POP EBP
   00A9F1A0  C3                   RET
 
-; 00A9DE20  _Sort<AnnotatedLightGridPoint_*,int,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 00A9DE20  _Sort<AnnotatedLightGridPoint_*,int,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   00A9DE20  55                   PUSH EBP
   00A9DE21  8BEC                 MOV EBP,ESP
   00A9DE23  81EC64010000         SUB ESP,0x164
@@ -11511,7 +11511,7 @@ LAB_00a9df55:
   00A9DF58  5D                   POP EBP
   00A9DF59  C3                   RET
 
-; 00A9DF60  _Sort<GfxSurface_*,int,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 00A9DF60  _Sort<GfxSurface_*,int,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   00A9DF60  55                   PUSH EBP
   00A9DF61  8BEC                 MOV EBP,ESP
   00A9DF63  81ECEC030000         SUB ESP,0x3ec
@@ -11633,7 +11633,7 @@ LAB_00a9e095:
   00A9E098  5D                   POP EBP
   00A9E099  C3                   RET
 
-; 00A9E0A0  _Sort<GfxStaticModelCombinedInst_*,int,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 00A9E0A0  _Sort<GfxStaticModelCombinedInst_*,int,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   00A9E0A0  55                   PUSH EBP
   00A9E0A1  8BEC                 MOV EBP,ESP
   00A9E0A3  81ECA0050000         SUB ESP,0x5a0
@@ -12117,7 +12117,7 @@ LAB_00a96c3f:
   00A904C6  5D                   POP EBP
   00A904C7  C3                   RET
 
-; 00AA0C90  unchecked_copy_backward<AnnotatedLightGridPoint_*,AnnotatedLightGridPoint_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xutility:3636)
+; 00AA0C90  unchecked_copy_backward<AnnotatedLightGridPoint_*,AnnotatedLightGridPoint_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xutility:3636)
   00AA0C90  55                   PUSH EBP
   00AA0C91  8BEC                 MOV EBP,ESP
   00AA0C93  83EC30               SUB ESP,0x30
@@ -12181,7 +12181,7 @@ LAB_00aa0d2e:
   00AA0D33  5D                   POP EBP
   00AA0D34  C3                   RET
 
-; 00AA0E80  unchecked_copy_backward<GfxSurface_*,GfxSurface_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xutility:3636)
+; 00AA0E80  unchecked_copy_backward<GfxSurface_*,GfxSurface_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xutility:3636)
   00AA0E80  55                   PUSH EBP
   00AA0E81  8BEC                 MOV EBP,ESP
   00AA0E83  83EC30               SUB ESP,0x30
@@ -12245,7 +12245,7 @@ LAB_00aa0f15:
   00AA0F1C  5D                   POP EBP
   00AA0F1D  C3                   RET
 
-; 00AA1070  unchecked_copy_backward<GfxStaticModelCombinedInst_*,GfxStaticModelCombinedInst_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xutility:3636)
+; 00AA1070  unchecked_copy_backward<GfxStaticModelCombinedInst_*,GfxStaticModelCombinedInst_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xutility:3636)
   00AA1070  55                   PUSH EBP
   00AA1071  8BEC                 MOV EBP,ESP
   00AA1073  83EC30               SUB ESP,0x30

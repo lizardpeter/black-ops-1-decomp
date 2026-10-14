@@ -4459,7 +4459,7 @@ LAB_00892545:
   00892547  5D                   POP EBP
   00892548  C3                   RET
 
-; 00892DA0  _Adjust_heap<flameGeneric_s_*_*,int,flameGeneric_s_*,Flame_SortByStream>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 00892DA0  _Adjust_heap<flameGeneric_s_*_*,int,flameGeneric_s_*,Flame_SortByStream>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   00892DA0  55                   PUSH EBP
   00892DA1  8BEC                 MOV EBP,ESP
   00892DA3  83EC14               SUB ESP,0x14
@@ -4570,7 +4570,7 @@ LAB_00892e9f:
   00892EAE  5D                   POP EBP
   00892EAF  C3                   RET
 
-; 00892EB0  pop_heap<flameGeneric_s_*_*,Flame_SortByStream>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2151)
+; 00892EB0  pop_heap<flameGeneric_s_*_*,Flame_SortByStream>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2151)
   00892EB0  55                   PUSH EBP
   00892EB1  8BEC                 MOV EBP,ESP
   00892EB3  83EC28               SUB ESP,0x28
@@ -4609,7 +4609,7 @@ LAB_00892f08:
   00892F0A  5D                   POP EBP
   00892F0B  C3                   RET
 
-; 00892AA0  make_heap<flameGeneric_s_*_*,Flame_SortByStream>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 00892AA0  make_heap<flameGeneric_s_*_*,Flame_SortByStream>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   00892AA0  55                   PUSH EBP
   00892AA1  8BEC                 MOV EBP,ESP
   00892AA3  83EC2C               SUB ESP,0x2c
@@ -4657,7 +4657,7 @@ LAB_00892b0b:
   00892B0D  5D                   POP EBP
   00892B0E  C3                   RET
 
-; 00892C00  _Insertion_sort1<flameGeneric_s_*_*,Flame_SortByStream,flameGeneric_s_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 00892C00  _Insertion_sort1<flameGeneric_s_*_*,Flame_SortByStream,flameGeneric_s_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   00892C00  55                   PUSH EBP
   00892C01  8BEC                 MOV EBP,ESP
   00892C03  83EC34               SUB ESP,0x34
@@ -4740,7 +4740,7 @@ LAB_00892cc4:
   00892CC6  5D                   POP EBP
   00892CC7  C3                   RET
 
-; 00892CD0  _Med3<flameGeneric_s_*_*,Flame_SortByStream>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3156)
+; 00892CD0  _Med3<flameGeneric_s_*_*,Flame_SortByStream>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3156)
   00892CD0  55                   PUSH EBP
   00892CD1  8BEC                 MOV EBP,ESP
   00892CD3  83EC0C               SUB ESP,0xc
@@ -4823,7 +4823,7 @@ LAB_00892d8d:
   00892D8F  5D                   POP EBP
   00892D90  C3                   RET
 
-; 00892B10  _Median<flameGeneric_s_*_*,Flame_SortByStream>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 00892B10  _Median<flameGeneric_s_*_*,Flame_SortByStream>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   00892B10  55                   PUSH EBP
   00892B11  8BEC                 MOV EBP,ESP
   00892B13  83EC40               SUB ESP,0x40
@@ -4920,7 +4920,7 @@ LAB_00892bfb:
   00892BFD  5D                   POP EBP
   00892BFE  C3                   RET
 
-; 00892720  _Unguarded_partition<flameGeneric_s_*_*,Flame_SortByStream>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 00892720  _Unguarded_partition<flameGeneric_s_*_*,Flame_SortByStream>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   00892720  55                   PUSH EBP
   00892721  8BEC                 MOV EBP,ESP
   00892723  83EC60               SUB ESP,0x60
@@ -5278,7 +5278,7 @@ LAB_00892a95:
   00892A97  5D                   POP EBP
   00892A98  C3                   RET
 
-; 008925B0  _Sort<flameGeneric_s_*_*,int,Flame_SortByStream>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 008925B0  _Sort<flameGeneric_s_*_*,int,Flame_SortByStream>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   008925B0  55                   PUSH EBP
   008925B1  8BEC                 MOV EBP,ESP
   008925B3  81ECE4000000         SUB ESP,0xe4

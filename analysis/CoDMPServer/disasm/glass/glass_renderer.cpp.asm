@@ -20,7 +20,7 @@ LAB_0099bb81:
   0099BB81  5D                   POP EBP
   0099BB82  C3                   RET
 
-; 0099F5E0  _Find<std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::_Iterator<0>,GlassShard_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:37)
+; 0099F5E0  _Find<std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::_Iterator<0>,GlassShard_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:37)
   0099F5E0  55                   PUSH EBP
   0099F5E1  8BEC                 MOV EBP,ESP
   0099F5E3  83EC10               SUB ESP,0x10
@@ -83,7 +83,7 @@ LAB_0099f656:
   0099F669  5D                   POP EBP
   0099F66A  C3                   RET
 
-; 0099F780  _Find<std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::_Const_iterator<0>,GlassShard_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:37)
+; 0099F780  _Find<std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::_Const_iterator<0>,GlassShard_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:37)
   0099F780  55                   PUSH EBP
   0099F781  8BEC                 MOV EBP,ESP
   0099F783  83EC0C               SUB ESP,0xc
@@ -156,7 +156,7 @@ LAB_0099f7f0:
   009982B6  5D                   POP EBP
   009982B7  C3                   RET
 
-; 0099F260  _List_ptr<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:67)
+; 0099F260  _List_ptr<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:67)
   0099F260  55                   PUSH EBP
   0099F261  8BEC                 MOV EBP,ESP
   0099F263  83EC2C               SUB ESP,0x2c
@@ -1059,7 +1059,7 @@ LAB_00998f8b:
   009990EB  5D                   POP EBP
   009990EC  C20400               RET 0x4
 
-; 0099F330  find<std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::_Iterator<1>,GlassShard_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:73)
+; 0099F330  find<std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::_Iterator<1>,GlassShard_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:73)
   0099F330  55                   PUSH EBP
   0099F331  8BEC                 MOV EBP,ESP
   0099F333  83EC5C               SUB ESP,0x5c
@@ -1114,7 +1114,7 @@ LAB_0099f396:
   0099F3B3  5D                   POP EBP
   0099F3B4  C3                   RET
 
-; 0099F550  find<std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::_Const_iterator<1>,GlassShard_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:73)
+; 0099F550  find<std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::_Const_iterator<1>,GlassShard_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:73)
   0099F550  55                   PUSH EBP
   0099F551  8BEC                 MOV EBP,ESP
   0099F553  83EC60               SUB ESP,0x60
@@ -1196,7 +1196,7 @@ LAB_0099a978:
   0099A980  5D                   POP EBP
   0099A981  C3                   RET
 
-; 0099E7F0  _Const_iterator<1>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:176)
+; 0099E7F0  _Const_iterator<1>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:176)
   0099E7F0  55                   PUSH EBP
   0099E7F1  8BEC                 MOV EBP,ESP
   0099E7F3  51                   PUSH ECX
@@ -1614,7 +1614,7 @@ LAB_0099eb03:
   0099EB17  5D                   POP EBP
   0099EB18  C3                   RET
 
-; 0099F810  _Checked_iterator_base  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:198)
+; 0099F810  _Checked_iterator_base  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:198)
   0099F810  55                   PUSH EBP
   0099F811  8BEC                 MOV EBP,ESP
   0099F813  83EC1C               SUB ESP,0x1c
@@ -1662,7 +1662,7 @@ LAB_0099f869:
   0099F884  5D                   POP EBP
   0099F885  C20400               RET 0x4
 
-; 0099E400  operator*  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:211)
+; 0099E400  operator*  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:211)
   0099E400  55                   PUSH EBP
   0099E401  8BEC                 MOV EBP,ESP
   0099E403  83EC10               SUB ESP,0x10
@@ -1717,7 +1717,7 @@ LAB_0099e474:
   0099E47F  5D                   POP EBP
   0099E480  C3                   RET
 
-; 0099F670  operator*  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:211)
+; 0099F670  operator*  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:211)
   0099F670  55                   PUSH EBP
   0099F671  8BEC                 MOV EBP,ESP
   0099F673  83EC10               SUB ESP,0x10
@@ -2272,7 +2272,7 @@ LAB_0099f543:
   0099F54B  5D                   POP EBP
   0099F54C  C20400               RET 0x4
 
-; 0099E700  operator++  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:235)
+; 0099E700  operator++  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:235)
   0099E700  55                   PUSH EBP
   0099E701  8BEC                 MOV EBP,ESP
   0099E703  83EC14               SUB ESP,0x14
@@ -2332,7 +2332,7 @@ LAB_0099e774:
   0099E78D  5D                   POP EBP
   0099E78E  C3                   RET
 
-; 0099F6F0  operator++  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:235)
+; 0099F6F0  operator++  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:235)
   0099F6F0  55                   PUSH EBP
   0099F6F1  8BEC                 MOV EBP,ESP
   0099F6F3  83EC14               SUB ESP,0x14
@@ -2390,7 +2390,7 @@ LAB_0099f75a:
   0099F773  5D                   POP EBP
   0099F774  C3                   RET
 
-; 0099E840  operator--  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:262)
+; 0099E840  operator--  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:262)
   0099E840  55                   PUSH EBP
   0099E841  8BEC                 MOV EBP,ESP
   0099E843  83EC10               SUB ESP,0x10
@@ -2678,7 +2678,7 @@ LAB_009995a7:
   009995C6  5D                   POP EBP
   009995C7  C20400               RET 0x4
 
-; 0099E790  operator==  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:290)
+; 0099E790  operator==  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:290)
   0099E790  55                   PUSH EBP
   0099E791  8BEC                 MOV EBP,ESP
   0099E793  51                   PUSH ECX
@@ -2738,7 +2738,7 @@ LAB_009995f8:
   009995FD  5D                   POP EBP
   009995FE  C3                   RET
 
-; 0099E490  operator!=  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:302)
+; 0099E490  operator!=  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:302)
   0099E490  55                   PUSH EBP
   0099E491  8BEC                 MOV EBP,ESP
   0099E493  51                   PUSH ECX
@@ -3403,7 +3403,7 @@ LAB_00999d5d:
   00C566FB  5D                   POP EBP
   00C566FC  C3                   RET
 
-; 0099F2C0  _Container_base_aux_alloc_real<SmallAllocatorTemplate<GlassShard_*>_>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xutility:419)
+; 0099F2C0  _Container_base_aux_alloc_real<SmallAllocatorTemplate<GlassShard_*>_>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xutility:419)
   0099F2C0  55                   PUSH EBP
   0099F2C1  8BEC                 MOV EBP,ESP
   0099F2C3  83EC14               SUB ESP,0x14
@@ -3442,7 +3442,7 @@ LAB_0099f314:
   0099F321  5D                   POP EBP
   0099F322  C20400               RET 0x4
 
-; 0099EF30  list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:441)
+; 0099EF30  list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:441)
   0099EF30  55                   PUSH EBP
   0099EF31  8BEC                 MOV EBP,ESP
   0099EF33  83EC48               SUB ESP,0x48
@@ -3640,7 +3640,7 @@ LAB_00999f39:
   00999F3B  5D                   POP EBP
   00999F3C  C20C00               RET 0xc
 
-; 0099E3A0  begin  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:533)
+; 0099E3A0  begin  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:533)
   0099E3A0  55                   PUSH EBP
   0099E3A1  8BEC                 MOV EBP,ESP
   0099E3A3  83EC0C               SUB ESP,0xc
@@ -3675,7 +3675,7 @@ LAB_0099e3e4:
   0099E3F3  5D                   POP EBP
   0099E3F4  C20400               RET 0x4
 
-; 0099E350  end  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:543)
+; 0099E350  end  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:543)
   0099E350  55                   PUSH EBP
   0099E351  8BEC                 MOV EBP,ESP
   0099E353  83EC08               SUB ESP,0x8
@@ -4166,7 +4166,7 @@ LAB_0099a483:
   0099A512  5D                   POP EBP
   0099A513  C20800               RET 0x8
 
-; 0099E130  front  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:639)
+; 0099E130  front  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:639)
   0099E130  55                   PUSH EBP
   0099E131  8BEC                 MOV EBP,ESP
   0099E133  83EC18               SUB ESP,0x18
@@ -4291,7 +4291,7 @@ LAB_0099a616:
   0099A618  5D                   POP EBP
   0099A619  C20800               RET 0x8
 
-; 0099E190  back  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:649)
+; 0099E190  back  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:649)
   0099E190  55                   PUSH EBP
   0099E191  8BEC                 MOV EBP,ESP
   0099E193  83EC18               SUB ESP,0x18
@@ -4337,7 +4337,7 @@ LAB_0099e1c7:
   0099A63B  5D                   POP EBP
   0099A63C  C20400               RET 0x4
 
-; 0099EFA0  push_front  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:659)
+; 0099EFA0  push_front  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:659)
   0099EFA0  55                   PUSH EBP
   0099EFA1  8BEC                 MOV EBP,ESP
   0099EFA3  83EC78               SUB ESP,0x78
@@ -4380,7 +4380,7 @@ LAB_0099efdf:
   0099F009  5D                   POP EBP
   0099F00A  C20400               RET 0x4
 
-; 0099E1F0  pop_back  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:674)
+; 0099E1F0  pop_back  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:674)
   0099E1F0  55                   PUSH EBP
   0099E1F1  8BEC                 MOV EBP,ESP
   0099E1F3  83EC44               SUB ESP,0x44
@@ -4422,7 +4422,7 @@ LAB_0099e227:
   0099E259  5D                   POP EBP
   0099E25A  C3                   RET
 
-; 0099E260  _Insert  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:710)
+; 0099E260  _Insert  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:710)
   0099E260  55                   PUSH EBP
   0099E261  8BEC                 MOV EBP,ESP
   0099E263  83EC60               SUB ESP,0x60
@@ -4881,7 +4881,7 @@ LAB_0099ac0d:
   0099AC0F  5D                   POP EBP
   0099AC10  C20400               RET 0x4
 
-; 0099F190  erase  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:786)
+; 0099F190  erase  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:786)
   0099F190  55                   PUSH EBP
   0099F191  8BEC                 MOV EBP,ESP
   0099F193  83EC24               SUB ESP,0x24
@@ -5099,7 +5099,7 @@ LAB_0099aceb:
   0099ADC3  5D                   POP EBP
   0099ADC4  C21000               RET 0x10
 
-; 0099F010  clear  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:825)
+; 0099F010  clear  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:825)
   0099F010  55                   PUSH EBP
   0099F011  8BEC                 MOV EBP,ESP
   0099F013  83EC14               SUB ESP,0x14
@@ -5615,7 +5615,7 @@ LAB_0099b36d:
   0099B36F  5D                   POP EBP
   0099B370  C20C00               RET 0xc
 
-; 0099E2C0  remove  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:927)
+; 0099E2C0  remove  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:927)
   0099E2C0  55                   PUSH EBP
   0099E2C1  8BEC                 MOV EBP,ESP
   0099E2C3  83EC64               SUB ESP,0x64
@@ -6850,7 +6850,7 @@ LAB_0099c537:
   0099C539  5D                   POP EBP
   0099C53A  C3                   RET
 
-; 0099F090  _Buynode  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:1171)
+; 0099F090  _Buynode  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:1171)
   0099F090  55                   PUSH EBP
   0099F091  8BEC                 MOV EBP,ESP
   0099F093  6AFF                 PUSH -0x1
@@ -6914,7 +6914,7 @@ LAB_0099f13b:
 LAB_0099f142:
   0099F142  EB2D                 JMP 0x0099f171
 
-; 0099E500  _Buynode  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:1190)
+; 0099E500  _Buynode  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:1190)
   0099E500  55                   PUSH EBP
   0099E501  8BEC                 MOV EBP,ESP
   0099E503  6AFF                 PUSH -0x1
@@ -7683,7 +7683,7 @@ LAB_0099d06d:
   0099D06F  5D                   POP EBP
   0099D070  C3                   RET
 
-; 0099E620  _Incsize  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/list:1239)
+; 0099E620  _Incsize  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/list:1239)
   0099E620  55                   PUSH EBP
   0099E621  8BEC                 MOV EBP,ESP
   0099E623  81ECA8000000         SUB ESP,0xa8

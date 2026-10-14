@@ -110,7 +110,7 @@ LAB_0076b786:
   0076B78C  5D                   POP EBP
   0076B78D  C3                   RET
 
-; 00776A30  find<std::reverse_iterator<char_*>,char>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:73)
+; 00776A30  find<std::reverse_iterator<char_*>,char>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:73)
   00776A30  55                   PUSH EBP
   00776A31  8BEC                 MOV EBP,ESP
   00776A33  83EC2C               SUB ESP,0x2c

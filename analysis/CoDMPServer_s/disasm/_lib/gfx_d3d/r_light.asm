@@ -1577,7 +1577,7 @@ LAB_00852726:
   0085272A  83C414               ADD ESP,0x14
   0085272D  C3                   RET
 
-; 00852730  _Sort<GfxSurface_*_*,int,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 00852730  _Sort<GfxSurface_*_*,int,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   00852730  83EC0C               SUB ESP,0xc
   00852733  53                   PUSH EBX
   00852734  8B5C2414             MOV EBX,dword ptr [ESP + 0x14]

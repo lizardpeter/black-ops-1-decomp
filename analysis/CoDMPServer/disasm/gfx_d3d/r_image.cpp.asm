@@ -3817,7 +3817,7 @@ LAB_00ac367e:
   00AC368F  5D                   POP EBP
   00AC3690  C3                   RET
 
-; 00AC4290  _Adjust_heap<GfxImage_*_*,int,GfxImage_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 00AC4290  _Adjust_heap<GfxImage_*_*,int,GfxImage_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   00AC4290  55                   PUSH EBP
   00AC4291  8BEC                 MOV EBP,ESP
   00AC4293  83EC10               SUB ESP,0x10
@@ -4158,7 +4158,7 @@ LAB_00ac3aec:
   00AC3AEE  5D                   POP EBP
   00AC3AEF  C3                   RET
 
-; 00AC4390  pop_heap<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2151)
+; 00AC4390  pop_heap<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2151)
   00AC4390  55                   PUSH EBP
   00AC4391  8BEC                 MOV EBP,ESP
   00AC4393  83EC24               SUB ESP,0x24
@@ -4197,7 +4197,7 @@ LAB_00ac43e7:
   00AC43E9  5D                   POP EBP
   00AC43EA  C3                   RET
 
-; 00AC3FB0  make_heap<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 00AC3FB0  make_heap<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   00AC3FB0  55                   PUSH EBP
   00AC3FB1  8BEC                 MOV EBP,ESP
   00AC3FB3  83EC28               SUB ESP,0x28
@@ -4245,7 +4245,7 @@ LAB_00ac401a:
   00AC401C  5D                   POP EBP
   00AC401D  C3                   RET
 
-; 00AC4110  _Insertion_sort1<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*),GfxImage_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 00AC4110  _Insertion_sort1<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*),GfxImage_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   00AC4110  55                   PUSH EBP
   00AC4111  8BEC                 MOV EBP,ESP
   00AC4113  83EC34               SUB ESP,0x34
@@ -4326,7 +4326,7 @@ LAB_00ac41ca:
   00AC41CC  5D                   POP EBP
   00AC41CD  C3                   RET
 
-; 00AC41D0  _Med3<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3156)
+; 00AC41D0  _Med3<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3156)
   00AC41D0  55                   PUSH EBP
   00AC41D1  8BEC                 MOV EBP,ESP
   00AC41D3  83EC0C               SUB ESP,0xc
@@ -4406,7 +4406,7 @@ LAB_00ac427e:
   00AC4280  5D                   POP EBP
   00AC4281  C3                   RET
 
-; 00AC4020  _Median<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 00AC4020  _Median<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   00AC4020  55                   PUSH EBP
   00AC4021  8BEC                 MOV EBP,ESP
   00AC4023  83EC40               SUB ESP,0x40
@@ -4503,7 +4503,7 @@ LAB_00ac4106:
   00AC4108  5D                   POP EBP
   00AC4109  C3                   RET
 
-; 00AC3C60  _Unguarded_partition<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 00AC3C60  _Unguarded_partition<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   00AC3C60  55                   PUSH EBP
   00AC3C61  8BEC                 MOV EBP,ESP
   00AC3C63  83EC6C               SUB ESP,0x6c
@@ -4853,7 +4853,7 @@ LAB_00ac3fac:
   00AC3FAE  5D                   POP EBP
   00AC3FAF  C3                   RET
 
-; 00AC3AF0  _Sort<GfxImage_*_*,int,int_(__cdecl*)(GfxImage_*,GfxImage_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 00AC3AF0  _Sort<GfxImage_*_*,int,int_(__cdecl*)(GfxImage_*,GfxImage_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   00AC3AF0  55                   PUSH EBP
   00AC3AF1  8BEC                 MOV EBP,ESP
   00AC3AF3  81ECE4000000         SUB ESP,0xe4

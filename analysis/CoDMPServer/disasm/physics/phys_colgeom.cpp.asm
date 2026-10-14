@@ -3819,7 +3819,7 @@ LAB_00832d4a:
   00832D6F  5D                   POP EBP
   00832D70  C3                   RET
 
-; 00831BD0  GetCallbackSizeBytes  (<external>/projects_pc/cod/sdk/steamworks/public/steam/steam_api.h:317)
+; 00831BD0  GetCallbackSizeBytes  (<external>/projects_pc/cod/sdk/Steamworks/public/steam/steam_api.h:317)
   00831BD0  55                   PUSH EBP
   00831BD1  8BEC                 MOV EBP,ESP
   00831BD3  51                   PUSH ECX
@@ -3829,7 +3829,7 @@ LAB_00832d4a:
   00831BDE  5D                   POP EBP
   00831BDF  C3                   RET
 
-; 0097EB60  GetCallbackSizeBytes  (<external>/projects_pc/cod/sdk/steamworks/public/steam/steam_api.h:317)
+; 0097EB60  GetCallbackSizeBytes  (<external>/projects_pc/cod/sdk/Steamworks/public/steam/steam_api.h:317)
   0097EB60  55                   PUSH EBP
   0097EB61  8BEC                 MOV EBP,ESP
   0097EB63  51                   PUSH ECX

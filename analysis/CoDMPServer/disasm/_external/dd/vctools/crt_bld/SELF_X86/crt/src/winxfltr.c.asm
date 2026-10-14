@@ -3,7 +3,7 @@
 ; 00942896  SND_DspInit  (sound/snd_dsp.cpp:57)
   00942896  C3                   RET
 
-; 00C24222  _XcptFilter  (<external>/dd/vctools/crt_bld/self_x86/crt/src/winxfltr.c:206)
+; 00C24222  _XcptFilter  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winxfltr.c:206)
   00C24222  8BFF                 MOV EDI,EDI
   00C24224  55                   PUSH EBP
   00C24225  8BEC                 MOV EBP,ESP

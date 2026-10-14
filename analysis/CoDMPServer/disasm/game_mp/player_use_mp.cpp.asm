@@ -2850,7 +2850,7 @@ LAB_0069b7b3:
   0069B7B5  5D                   POP EBP
   0069B7B6  C3                   RET
 
-; 0069CE40  _Adjust_heap<RagdollSortStruct_*,int,RagdollSortStruct,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 0069CE40  _Adjust_heap<RagdollSortStruct_*,int,RagdollSortStruct,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   0069CE40  55                   PUSH EBP
   0069CE41  8BEC                 MOV EBP,ESP
   0069CE43  83EC18               SUB ESP,0x18
@@ -2971,7 +2971,7 @@ LAB_0069cf59:
   0069CF6F  5D                   POP EBP
   0069CF70  C3                   RET
 
-; 0086BF90  make_heap<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 0086BF90  make_heap<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   0086BF90  55                   PUSH EBP
   0086BF91  8BEC                 MOV EBP,ESP
   0086BF93  83EC38               SUB ESP,0x38
@@ -3025,7 +3025,7 @@ LAB_0086c00b:
   0086C00D  5D                   POP EBP
   0086C00E  C3                   RET
 
-; 005B6530  _Sort_heap<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2232)
+; 005B6530  _Sort_heap<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2232)
   005B6530  55                   PUSH EBP
   005B6531  8BEC                 MOV EBP,ESP
   005B6533  83EC38               SUB ESP,0x38
@@ -3087,7 +3087,7 @@ LAB_005b65c1:
   005B65C3  5D                   POP EBP
   005B65C4  C3                   RET
 
-; 0069CD60  _Insertion_sort1<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&),RagdollSortStruct>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 0069CD60  _Insertion_sort1<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&),RagdollSortStruct>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   0069CD60  55                   PUSH EBP
   0069CD61  8BEC                 MOV EBP,ESP
   0069CD63  83EC44               SUB ESP,0x44
@@ -3176,7 +3176,7 @@ LAB_0069ce34:
   0069CE36  5D                   POP EBP
   0069CE37  C3                   RET
 
-; 005B6000  _Median<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 005B6000  _Median<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   005B6000  55                   PUSH EBP
   005B6001  8BEC                 MOV EBP,ESP
   005B6003  81EC9C000000         SUB ESP,0x9c
@@ -3673,7 +3673,7 @@ LAB_005b651e:
   005B6520  5D                   POP EBP
   005B6521  C3                   RET
 
-; 005B5BE0  _Unguarded_partition<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 005B5BE0  _Unguarded_partition<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   005B5BE0  55                   PUSH EBP
   005B5BE1  8BEC                 MOV EBP,ESP
   005B5BE3  81EC9C000000         SUB ESP,0x9c
@@ -4061,7 +4061,7 @@ LAB_005b5ff4:
   005B5FF6  5D                   POP EBP
   005B5FF7  C3                   RET
 
-; 0069CC30  _Sort<RagdollSortStruct_*,int,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 0069CC30  _Sort<RagdollSortStruct_*,int,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   0069CC30  55                   PUSH EBP
   0069CC31  8BEC                 MOV EBP,ESP
   0069CC33  81EC1C010000         SUB ESP,0x11c
@@ -4174,7 +4174,7 @@ LAB_0069cd53:
   0069CD55  5D                   POP EBP
   0069CD56  C3                   RET
 
-; 0086C010  unchecked_copy_backward<RagdollSortStruct_*,RagdollSortStruct_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xutility:3636)
+; 0086C010  unchecked_copy_backward<RagdollSortStruct_*,RagdollSortStruct_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xutility:3636)
   0086C010  55                   PUSH EBP
   0086C011  8BEC                 MOV EBP,ESP
   0086C013  83EC30               SUB ESP,0x30

@@ -2013,7 +2013,7 @@ LAB_008eb4c4:
   008EB4C6  5D                   POP EBP
   008EB4C7  C3                   RET
 
-; 00AD9CC0  _Adjust_heap<pathsort_t_*,int,pathsort_t,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 00AD9CC0  _Adjust_heap<pathsort_t_*,int,pathsort_t,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   00AD9CC0  55                   PUSH EBP
   00AD9CC1  8BEC                 MOV EBP,ESP
   00AD9CC3  83EC1C               SUB ESP,0x1c
@@ -2151,7 +2151,7 @@ LAB_00ad9dfa:
   00AD9E16  5D                   POP EBP
   00AD9E17  C3                   RET
 
-; 008EBB00  make_heap<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 008EBB00  make_heap<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   008EBB00  55                   PUSH EBP
   008EBB01  8BEC                 MOV EBP,ESP
   008EBB03  83EC40               SUB ESP,0x40
@@ -2216,7 +2216,7 @@ LAB_008ebb9e:
   008EBBA0  5D                   POP EBP
   008EBBA1  C3                   RET
 
-; 008EC290  _Sort_heap<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2232)
+; 008EC290  _Sort_heap<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2232)
   008EC290  55                   PUSH EBP
   008EC291  8BEC                 MOV EBP,ESP
   008EC293  83EC40               SUB ESP,0x40
@@ -2294,7 +2294,7 @@ LAB_008ec352:
   008EC354  5D                   POP EBP
   008EC355  C3                   RET
 
-; 008EC360  _Insertion_sort1<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&),pathsort_t>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 008EC360  _Insertion_sort1<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&),pathsort_t>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   008EC360  55                   PUSH EBP
   008EC361  8BEC                 MOV EBP,ESP
   008EC363  83EC48               SUB ESP,0x48
@@ -2391,7 +2391,7 @@ LAB_008ec44c:
   008EC44E  5D                   POP EBP
   008EC44F  C3                   RET
 
-; 008EBBB0  _Median<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 008EBBB0  _Median<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   008EBBB0  55                   PUSH EBP
   008EBBB1  8BEC                 MOV EBP,ESP
   008EBBB3  81ECD8000000         SUB ESP,0xd8
@@ -2982,7 +2982,7 @@ LAB_008ec28b:
   008EC28D  5D                   POP EBP
   008EC28E  C3                   RET
 
-; 008EB610  _Unguarded_partition<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 008EB610  _Unguarded_partition<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   008EB610  55                   PUSH EBP
   008EB611  8BEC                 MOV EBP,ESP
   008EB613  81ECC4000000         SUB ESP,0xc4
@@ -3414,7 +3414,7 @@ LAB_008ebaf9:
   008EBAFB  5D                   POP EBP
   008EBAFC  C3                   RET
 
-; 008EB4D0  _Sort<pathsort_t_*,int,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 008EB4D0  _Sort<pathsort_t_*,int,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   008EB4D0  55                   PUSH EBP
   008EB4D1  8BEC                 MOV EBP,ESP
   008EB4D3  81EC44010000         SUB ESP,0x144
@@ -3536,7 +3536,7 @@ LAB_008eb605:
   008EB608  5D                   POP EBP
   008EB609  C3                   RET
 
-; 008EC450  unchecked_copy_backward<pathsort_t_*,pathsort_t_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xutility:3636)
+; 008EC450  unchecked_copy_backward<pathsort_t_*,pathsort_t_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xutility:3636)
   008EC450  55                   PUSH EBP
   008EC451  8BEC                 MOV EBP,ESP
   008EC453  83EC30               SUB ESP,0x30

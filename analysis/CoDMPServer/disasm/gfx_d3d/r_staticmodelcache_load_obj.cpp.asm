@@ -715,7 +715,7 @@ LAB_00b33089:
   00B3308B  5D                   POP EBP
   00B3308C  C3                   RET
 
-; 00595C50  _Adjust_heap<DBReorderAssetEntry_*,int,DBReorderAssetEntry,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 00595C50  _Adjust_heap<DBReorderAssetEntry_*,int,DBReorderAssetEntry,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   00595C50  55                   PUSH EBP
   00595C51  8BEC                 MOV EBP,ESP
   00595C53  83EC20               SUB ESP,0x20
@@ -863,7 +863,7 @@ LAB_00595da2:
   00595DC4  5D                   POP EBP
   00595DC5  C3                   RET
 
-; 00595BA0  make_heap<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 00595BA0  make_heap<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   00595BA0  55                   PUSH EBP
   00595BA1  8BEC                 MOV EBP,ESP
   00595BA3  83EC48               SUB ESP,0x48
@@ -928,7 +928,7 @@ LAB_00595c40:
   00595C42  5D                   POP EBP
   00595C43  C3                   RET
 
-; 00B345C0  _Sort_heap<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2232)
+; 00B345C0  _Sort_heap<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2232)
   00B345C0  55                   PUSH EBP
   00B345C1  8BEC                 MOV EBP,ESP
   00B345C3  83EC48               SUB ESP,0x48
@@ -1006,7 +1006,7 @@ LAB_00b34689:
   00B3468B  5D                   POP EBP
   00B3468C  C3                   RET
 
-; 00B34690  _Insertion_sort1<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&),DBReorderAssetEntry>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 00B34690  _Insertion_sort1<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&),DBReorderAssetEntry>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   00B34690  55                   PUSH EBP
   00B34691  8BEC                 MOV EBP,ESP
   00B34693  83EC4C               SUB ESP,0x4c
@@ -1111,7 +1111,7 @@ LAB_00b34794:
   00B34796  5D                   POP EBP
   00B34797  C3                   RET
 
-; 00B33D70  _Median<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 00B33D70  _Median<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   00B33D70  55                   PUSH EBP
   00B33D71  8BEC                 MOV EBP,ESP
   00B33D73  81EC14010000         SUB ESP,0x114
@@ -1788,7 +1788,7 @@ LAB_00b345ad:
   00B345AF  5D                   POP EBP
   00B345B0  C3                   RET
 
-; 00B337B0  _Unguarded_partition<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 00B337B0  _Unguarded_partition<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   00B337B0  55                   PUSH EBP
   00B337B1  8BEC                 MOV EBP,ESP
   00B337B3  81ECEC000000         SUB ESP,0xec
@@ -2260,7 +2260,7 @@ LAB_00b33d6b:
   00B33D6D  5D                   POP EBP
   00B33D6E  C3                   RET
 
-; 00595A70  _Sort<DBReorderAssetEntry_*,int,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 00595A70  _Sort<DBReorderAssetEntry_*,int,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   00595A70  55                   PUSH EBP
   00595A71  8BEC                 MOV EBP,ESP
   00595A73  81EC6C010000         SUB ESP,0x16c
@@ -2373,7 +2373,7 @@ LAB_00595b93:
   00595B95  5D                   POP EBP
   00595B96  C3                   RET
 
-; 00595DD0  unchecked_copy_backward<DBReorderAssetEntry_*,DBReorderAssetEntry_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xutility:3636)
+; 00595DD0  unchecked_copy_backward<DBReorderAssetEntry_*,DBReorderAssetEntry_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xutility:3636)
   00595DD0  55                   PUSH EBP
   00595DD1  8BEC                 MOV EBP,ESP
   00595DD3  83EC30               SUB ESP,0x30

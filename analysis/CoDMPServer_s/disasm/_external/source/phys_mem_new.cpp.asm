@@ -104,7 +104,7 @@ LAB_008e399d:
   008E39A2  5D                   POP EBP
   008E39A3  C20800               RET 0x8
 
-; 004A5980  operator_delete  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/new:63)
+; 004A5980  operator_delete  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/new:63)
   004A5980  C3                   RET
 
 ; 008E3770  phys_memory_manager  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:144)

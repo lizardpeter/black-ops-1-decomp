@@ -1519,7 +1519,7 @@ LAB_00540a51:
   00540A7C  5D                   POP EBP
   00540A7D  C3                   RET
 
-; 00540A80  _Pow_int<float>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/math.h:474)
+; 00540A80  _Pow_int<float>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/math.h:474)
   00540A80  55                   PUSH EBP
   00540A81  8BEC                 MOV EBP,ESP
   00540A83  83EC0C               SUB ESP,0xc

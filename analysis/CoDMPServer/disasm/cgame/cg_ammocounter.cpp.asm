@@ -755,7 +755,7 @@ LAB_004750a8:
   004750AA  5D                   POP EBP
   004750AB  C3                   RET
 
-; 00472150  CG_GetSelectedWeaponIndex  (cgame_mp/cg_newdraw_mp.cpp:223)
+; 00472150  CG_GetSelectedWeaponIndex  (cgame_mp/cg_newDraw_mp.cpp:223)
   00472150  55                   PUSH EBP
   00472151  8BEC                 MOV EBP,ESP
   00472153  83EC0C               SUB ESP,0xc

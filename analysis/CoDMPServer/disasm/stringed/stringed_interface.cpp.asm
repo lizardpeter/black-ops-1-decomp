@@ -220,7 +220,7 @@ LAB_0072aa30:
   0072AA78  5D                   POP EBP
   0072AA79  C3                   RET
 
-; 0072AE90  append  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xstring:951)
+; 0072AE90  append  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xstring:951)
   0072AE90  55                   PUSH EBP
   0072AE91  8BEC                 MOV EBP,ESP
   0072AE93  83EC40               SUB ESP,0x40
@@ -345,7 +345,7 @@ LAB_0072afcf:
   0072AFD4  5D                   POP EBP
   0072AFD5  C20C00               RET 0xc
 
-; 0072ACD0  append  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xstring:970)
+; 0072ACD0  append  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xstring:970)
   0072ACD0  55                   PUSH EBP
   0072ACD1  8BEC                 MOV EBP,ESP
   0072ACD3  83EC50               SUB ESP,0x50
@@ -468,7 +468,7 @@ LAB_0072ae09:
   0072AE0B  5D                   POP EBP
   0072AE0C  C20800               RET 0x8
 
-; 0072AC30  append  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xstring:998)
+; 0072AC30  append  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xstring:998)
   0072AC30  55                   PUSH EBP
   0072AC31  8BEC                 MOV EBP,ESP
   0072AC33  83EC24               SUB ESP,0x24
@@ -529,7 +529,7 @@ LAB_0072acc3:
   0072ACC8  5D                   POP EBP
   0072ACC9  C20800               RET 0x8
 
-; 0072AE10  _Chassign  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xstring:2075)
+; 0072AE10  _Chassign  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xstring:2075)
   0072AE10  55                   PUSH EBP
   0072AE11  8BEC                 MOV EBP,ESP
   0072AE13  83EC10               SUB ESP,0x10

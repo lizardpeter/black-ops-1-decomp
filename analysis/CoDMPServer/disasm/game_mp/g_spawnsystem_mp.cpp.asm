@@ -3529,7 +3529,7 @@ LAB_0068921d:
   00689220  5D                   POP EBP
   00689221  C3                   RET
 
-; 0068CB40  _Push_heap<SpawnPoint_*,int,SpawnPoint,compare_spawnpoint_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2013)
+; 0068CB40  _Push_heap<SpawnPoint_*,int,SpawnPoint,compare_spawnpoint_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2013)
   0068CB40  55                   PUSH EBP
   0068CB41  8BEC                 MOV EBP,ESP
   0068CB43  83EC0C               SUB ESP,0xc
@@ -3595,7 +3595,7 @@ LAB_0068cbcd:
   0068CBE4  5D                   POP EBP
   0068CBE5  C3                   RET
 
-; 0068CBF0  _Push_heap<SpawnInfluencer_*_*,int,SpawnInfluencer_*,compare_spawninfluencer_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2013)
+; 0068CBF0  _Push_heap<SpawnInfluencer_*_*,int,SpawnInfluencer_*,compare_spawninfluencer_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2013)
   0068CBF0  55                   PUSH EBP
   0068CBF1  8BEC                 MOV EBP,ESP
   0068CBF3  83EC08               SUB ESP,0x8
@@ -3652,7 +3652,7 @@ LAB_0068cc66:
   0068CC75  5D                   POP EBP
   0068CC76  C3                   RET
 
-; 0068CC80  _Push_heap<int_*,int,int,compare_spawnpoint_score_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2013)
+; 0068CC80  _Push_heap<int_*,int,int,compare_spawnpoint_score_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2013)
   0068CC80  55                   PUSH EBP
   0068CC81  8BEC                 MOV EBP,ESP
   0068CC83  83EC08               SUB ESP,0x8
@@ -3903,7 +3903,7 @@ LAB_0068945e:
   00689499  5D                   POP EBP
   0068949A  C3                   RET
 
-; 0068C4F0  _Adjust_heap<SpawnPoint_*,int,SpawnPoint,compare_spawnpoint_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 0068C4F0  _Adjust_heap<SpawnPoint_*,int,SpawnPoint,compare_spawnpoint_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   0068C4F0  55                   PUSH EBP
   0068C4F1  8BEC                 MOV EBP,ESP
   0068C4F3  83EC18               SUB ESP,0x18
@@ -3998,7 +3998,7 @@ LAB_0068c5be:
   0068C5EA  5D                   POP EBP
   0068C5EB  C3                   RET
 
-; 0068C790  _Adjust_heap<SpawnInfluencer_*_*,int,SpawnInfluencer_*,compare_spawninfluencer_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 0068C790  _Adjust_heap<SpawnInfluencer_*_*,int,SpawnInfluencer_*,compare_spawninfluencer_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   0068C790  55                   PUSH EBP
   0068C791  8BEC                 MOV EBP,ESP
   0068C793  83EC10               SUB ESP,0x10
@@ -4078,7 +4078,7 @@ LAB_0068c838:
   0068C858  5D                   POP EBP
   0068C859  C3                   RET
 
-; 0068CA00  _Adjust_heap<int_*,int,int,compare_spawnpoint_score_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 0068CA00  _Adjust_heap<int_*,int,int,compare_spawnpoint_score_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   0068CA00  55                   PUSH EBP
   0068CA01  8BEC                 MOV EBP,ESP
   0068CA03  83EC10               SUB ESP,0x10
@@ -4259,7 +4259,7 @@ LAB_0068958d:
   006895CB  5D                   POP EBP
   006895CC  C3                   RET
 
-; 0068C860  pop_heap<SpawnInfluencer_*_*,compare_spawninfluencer_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2151)
+; 0068C860  pop_heap<SpawnInfluencer_*_*,compare_spawninfluencer_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2151)
   0068C860  55                   PUSH EBP
   0068C861  8BEC                 MOV EBP,ESP
   0068C863  83EC20               SUB ESP,0x20
@@ -4298,7 +4298,7 @@ LAB_0068c8b8:
   0068C8BA  5D                   POP EBP
   0068C8BB  C3                   RET
 
-; 0068CAE0  pop_heap<int_*,compare_spawnpoint_score_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2151)
+; 0068CAE0  pop_heap<int_*,compare_spawnpoint_score_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2151)
   0068CAE0  55                   PUSH EBP
   0068CAE1  8BEC                 MOV EBP,ESP
   0068CAE3  83EC20               SUB ESP,0x20
@@ -4435,7 +4435,7 @@ LAB_006896f7:
   00689713  5D                   POP EBP
   00689714  C3                   RET
 
-; 0068B240  make_heap<SpawnPoint_*,compare_spawnpoint_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 0068B240  make_heap<SpawnPoint_*,compare_spawnpoint_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   0068B240  55                   PUSH EBP
   0068B241  8BEC                 MOV EBP,ESP
   0068B243  83EC60               SUB ESP,0x60
@@ -4498,7 +4498,7 @@ LAB_0068b2cf:
   0068B2D3  5D                   POP EBP
   0068B2D4  C3                   RET
 
-; 0068B700  make_heap<SpawnInfluencer_*_*,compare_spawninfluencer_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 0068B700  make_heap<SpawnInfluencer_*_*,compare_spawninfluencer_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   0068B700  55                   PUSH EBP
   0068B701  8BEC                 MOV EBP,ESP
   0068B703  83EC24               SUB ESP,0x24
@@ -4546,7 +4546,7 @@ LAB_0068b76b:
   0068B76D  5D                   POP EBP
   0068B76E  C3                   RET
 
-; 0068BC40  make_heap<int_*,compare_spawnpoint_score_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 0068BC40  make_heap<int_*,compare_spawnpoint_score_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   0068BC40  55                   PUSH EBP
   0068BC41  8BEC                 MOV EBP,ESP
   0068BC43  83EC24               SUB ESP,0x24
@@ -4745,7 +4745,7 @@ LAB_00689d02:
   00689D28  5D                   POP EBP
   00689D29  C3                   RET
 
-; 0068BDB0  _Sort_heap<SpawnPoint_*,compare_spawnpoint_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2232)
+; 0068BDB0  _Sort_heap<SpawnPoint_*,compare_spawnpoint_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2232)
   0068BDB0  55                   PUSH EBP
   0068BDB1  8BEC                 MOV EBP,ESP
   0068BDB3  83EC60               SUB ESP,0x60
@@ -5936,7 +5936,7 @@ LAB_0068a28b:
   0068A28D  5D                   POP EBP
   0068A28E  C3                   RET
 
-; 0068BE70  _Insertion_sort1<SpawnPoint_*,compare_spawnpoint_sort,SpawnPoint>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 0068BE70  _Insertion_sort1<SpawnPoint_*,compare_spawnpoint_sort,SpawnPoint>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   0068BE70  55                   PUSH EBP
   0068BE71  8BEC                 MOV EBP,ESP
   0068BE73  81EC80000000         SUB ESP,0x80
@@ -6038,7 +6038,7 @@ LAB_0068bf89:
   0068BF8D  5D                   POP EBP
   0068BF8E  C3                   RET
 
-; 0068C080  _Insertion_sort1<SpawnInfluencer_*_*,compare_spawninfluencer_sort,SpawnInfluencer_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 0068C080  _Insertion_sort1<SpawnInfluencer_*_*,compare_spawninfluencer_sort,SpawnInfluencer_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   0068C080  55                   PUSH EBP
   0068C081  8BEC                 MOV EBP,ESP
   0068C083  83EC3C               SUB ESP,0x3c
@@ -6129,7 +6129,7 @@ LAB_0068c168:
   0068C16A  5D                   POP EBP
   0068C16B  C3                   RET
 
-; 0068C260  _Insertion_sort1<int_*,compare_spawnpoint_score_sort,int>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 0068C260  _Insertion_sort1<int_*,compare_spawnpoint_score_sort,int>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   0068C260  55                   PUSH EBP
   0068C261  8BEC                 MOV EBP,ESP
   0068C263  83EC3C               SUB ESP,0x3c
@@ -6230,7 +6230,7 @@ LAB_0068c371:
   0068C374  5D                   POP EBP
   0068C375  C3                   RET
 
-; 0068C380  _Med3<SpawnPoint_*,compare_spawnpoint_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3156)
+; 0068C380  _Med3<SpawnPoint_*,compare_spawnpoint_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3156)
   0068C380  55                   PUSH EBP
   0068C381  8BEC                 MOV EBP,ESP
   0068C383  81ECB4000000         SUB ESP,0xb4
@@ -6341,7 +6341,7 @@ LAB_0068c4e7:
   0068C4EB  5D                   POP EBP
   0068C4EC  C3                   RET
 
-; 0068C690  _Med3<SpawnInfluencer_*_*,compare_spawninfluencer_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3156)
+; 0068C690  _Med3<SpawnInfluencer_*_*,compare_spawninfluencer_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3156)
   0068C690  55                   PUSH EBP
   0068C691  8BEC                 MOV EBP,ESP
   0068C693  83EC18               SUB ESP,0x18
@@ -6436,7 +6436,7 @@ LAB_0068c783:
   0068C785  5D                   POP EBP
   0068C786  C3                   RET
 
-; 0068C8C0  _Med3<int_*,compare_spawnpoint_score_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3156)
+; 0068C8C0  _Med3<int_*,compare_spawnpoint_score_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3156)
   0068C8C0  55                   PUSH EBP
   0068C8C1  8BEC                 MOV EBP,ESP
   0068C8C3  83EC18               SUB ESP,0x18
@@ -6545,7 +6545,7 @@ LAB_0068c9f0:
   0068C9F3  5D                   POP EBP
   0068C9F4  C3                   RET
 
-; 0068BCB0  _Median<SpawnPoint_*,compare_spawnpoint_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 0068BCB0  _Median<SpawnPoint_*,compare_spawnpoint_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   0068BCB0  55                   PUSH EBP
   0068BCB1  8BEC                 MOV EBP,ESP
   0068BCB3  81EC4C030000         SUB ESP,0x34c
@@ -6646,7 +6646,7 @@ LAB_0068bda8:
   0068BDAA  5D                   POP EBP
   0068BDAB  C3                   RET
 
-; 0068BF90  _Median<SpawnInfluencer_*_*,compare_spawninfluencer_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 0068BF90  _Median<SpawnInfluencer_*_*,compare_spawninfluencer_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   0068BF90  55                   PUSH EBP
   0068BF91  8BEC                 MOV EBP,ESP
   0068BF93  83EC40               SUB ESP,0x40
@@ -6743,7 +6743,7 @@ LAB_0068c07b:
   0068C07D  5D                   POP EBP
   0068C07E  C3                   RET
 
-; 0068C170  _Median<int_*,compare_spawnpoint_score_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 0068C170  _Median<int_*,compare_spawnpoint_score_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   0068C170  55                   PUSH EBP
   0068C171  8BEC                 MOV EBP,ESP
   0068C173  83EC40               SUB ESP,0x40
@@ -6840,7 +6840,7 @@ LAB_0068c256:
   0068C258  5D                   POP EBP
   0068C259  C3                   RET
 
-; 0068AC60  _Unguarded_partition<SpawnPoint_*,compare_spawnpoint_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 0068AC60  _Unguarded_partition<SpawnPoint_*,compare_spawnpoint_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   0068AC60  55                   PUSH EBP
   0068AC61  8BEC                 MOV EBP,ESP
   0068AC63  81ECF0010000         SUB ESP,0x1f0
@@ -7266,7 +7266,7 @@ LAB_0068b239:
   0068B23D  5D                   POP EBP
   0068B23E  C3                   RET
 
-; 0068B2E0  _Unguarded_partition<SpawnInfluencer_*_*,compare_spawninfluencer_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 0068B2E0  _Unguarded_partition<SpawnInfluencer_*_*,compare_spawninfluencer_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   0068B2E0  55                   PUSH EBP
   0068B2E1  8BEC                 MOV EBP,ESP
   0068B2E3  81EC80000000         SUB ESP,0x80
@@ -7656,7 +7656,7 @@ LAB_0068b6f3:
   0068B6F5  5D                   POP EBP
   0068B6F6  C3                   RET
 
-; 0068B770  _Unguarded_partition<int_*,compare_spawnpoint_score_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 0068B770  _Unguarded_partition<int_*,compare_spawnpoint_score_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   0068B770  55                   PUSH EBP
   0068B771  8BEC                 MOV EBP,ESP
   0068B773  81EC80000000         SUB ESP,0x80
@@ -8080,7 +8080,7 @@ LAB_0068bc34:
   0068BC37  5D                   POP EBP
   0068BC38  C3                   RET
 
-; 0068A840  _Sort<SpawnPoint_*,int,compare_spawnpoint_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 0068A840  _Sort<SpawnPoint_*,int,compare_spawnpoint_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   0068A840  55                   PUSH EBP
   0068A841  8BEC                 MOV EBP,ESP
   0068A843  81ECFC020000         SUB ESP,0x2fc
@@ -8202,7 +8202,7 @@ LAB_0068a97b:
   0068A97E  5D                   POP EBP
   0068A97F  C3                   RET
 
-; 0068A980  _Sort<SpawnInfluencer_*_*,int,compare_spawninfluencer_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 0068A980  _Sort<SpawnInfluencer_*_*,int,compare_spawninfluencer_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   0068A980  55                   PUSH EBP
   0068A981  8BEC                 MOV EBP,ESP
   0068A983  81ECE4000000         SUB ESP,0xe4
@@ -8332,7 +8332,7 @@ LAB_0068aaec:
   0068AAEE  5D                   POP EBP
   0068AAEF  C3                   RET
 
-; 0068AAF0  _Sort<int_*,int,compare_spawnpoint_score_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 0068AAF0  _Sort<int_*,int,compare_spawnpoint_score_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   0068AAF0  55                   PUSH EBP
   0068AAF1  8BEC                 MOV EBP,ESP
   0068AAF3  81ECE4000000         SUB ESP,0xe4
@@ -8462,7 +8462,7 @@ LAB_0068ac56:
   0068AC58  5D                   POP EBP
   0068AC59  C3                   RET
 
-; 0068C5F0  unchecked_copy_backward<SpawnPoint_*,SpawnPoint_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xutility:3636)
+; 0068C5F0  unchecked_copy_backward<SpawnPoint_*,SpawnPoint_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xutility:3636)
   0068C5F0  55                   PUSH EBP
   0068C5F1  8BEC                 MOV EBP,ESP
   0068C5F3  83EC30               SUB ESP,0x30

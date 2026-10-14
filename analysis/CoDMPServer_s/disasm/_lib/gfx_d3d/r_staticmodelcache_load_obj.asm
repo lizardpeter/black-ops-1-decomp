@@ -82,7 +82,7 @@ LAB_008669f1:
   008669F2  81C414200000         ADD ESP,0x2014
   008669F8  C3                   RET
 
-; 008390B0  _Push_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2013)
+; 008390B0  _Push_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2013)
   008390B0  53                   PUSH EBX
   008390B1  8B5C2408             MOV EBX,dword ptr [ESP + 0x8]
   008390B5  55                   PUSH EBP
@@ -124,7 +124,7 @@ LAB_008390f8:
   008390FE  5B                   POP EBX
   008390FF  C3                   RET
 
-; 00867570  _Push_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2013)
+; 00867570  _Push_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2013)
   00867570  55                   PUSH EBP
   00867571  8B6C2408             MOV EBP,dword ptr [ESP + 0x8]
   00867575  56                   PUSH ESI
@@ -179,7 +179,7 @@ LAB_008675d5:
   008675F1  5D                   POP EBP
   008675F2  C3                   RET
 
-; 00867390  _Adjust_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 00867390  _Adjust_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   00867390  53                   PUSH EBX
   00867391  8B5C2408             MOV EBX,dword ptr [ESP + 0x8]
   00867395  55                   PUSH EBP
@@ -227,7 +227,7 @@ LAB_008673d8:
   008673F4  5B                   POP EBX
   008673F5  C3                   RET
 
-; 008674B0  _Adjust_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 008674B0  _Adjust_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   008674B0  53                   PUSH EBX
   008674B1  8B5C2408             MOV EBX,dword ptr [ESP + 0x8]
   008674B5  55                   PUSH EBP
@@ -300,7 +300,7 @@ LAB_0086753a:
   0086756C  5B                   POP EBX
   0086756D  C3                   RET
 
-; 008670E0  _Make_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2190)
+; 008670E0  _Make_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2190)
   008670E0  53                   PUSH EBX
   008670E1  55                   PUSH EBP
   008670E2  8B6C240C             MOV EBP,dword ptr [ESP + 0xc]
@@ -335,7 +335,7 @@ LAB_00867115:
   00867118  5B                   POP EBX
   00867119  C3                   RET
 
-; 008671C0  _Make_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2190)
+; 008671C0  _Make_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2190)
   008671C0  53                   PUSH EBX
   008671C1  8B5C240C             MOV EBX,dword ptr [ESP + 0xc]
   008671C5  55                   PUSH EBP
@@ -379,7 +379,7 @@ LAB_00867216:
   00867219  5B                   POP EBX
   0086721A  C3                   RET
 
-; 00839000  _Sort_heap<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2232)
+; 00839000  _Sort_heap<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2232)
   00839000  53                   PUSH EBX
   00839001  8B5C2408             MOV EBX,dword ptr [ESP + 0x8]
   00839005  56                   PUSH ESI
@@ -414,7 +414,7 @@ LAB_00839041:
   00839043  5B                   POP EBX
   00839044  C3                   RET
 
-; 00867220  _Sort_heap<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2232)
+; 00867220  _Sort_heap<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2232)
   00867220  53                   PUSH EBX
   00867221  8B5C2408             MOV EBX,dword ptr [ESP + 0x8]
   00867225  56                   PUSH ESI
@@ -453,7 +453,7 @@ LAB_00867283:
   00867284  5B                   POP EBX
   00867285  C3                   RET
 
-; 00852830  _Insertion_sort1<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*),GfxSurface_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 00852830  _Insertion_sort1<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*),GfxSurface_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   00852830  51                   PUSH ECX
   00852831  56                   PUSH ESI
   00852832  8B74240C             MOV ESI,dword ptr [ESP + 0xc]
@@ -531,7 +531,7 @@ LAB_008528cb:
   008528CD  59                   POP ECX
   008528CE  C3                   RET
 
-; 00867290  _Insertion_sort1<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&),GfxSModelSurfStats>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 00867290  _Insertion_sort1<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&),GfxSModelSurfStats>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   00867290  83EC10               SUB ESP,0x10
   00867293  53                   PUSH EBX
   00867294  55                   PUSH EBP
@@ -619,7 +619,7 @@ LAB_00867385:
   00867389  83C410               ADD ESP,0x10
   0086738C  C3                   RET
 
-; 00839050  _Med3<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3156)
+; 00839050  _Med3<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3156)
   00839050  8B07                 MOV EAX,dword ptr [EDI]
   00839052  8B0E                 MOV ECX,dword ptr [ESI]
   00839054  53                   PUSH EBX
@@ -673,7 +673,7 @@ LAB_00839090:
 LAB_008390ad:
   008390AD  C3                   RET
 
-; 00867400  _Med3<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3156)
+; 00867400  _Med3<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3156)
   00867400  53                   PUSH EBX
   00867401  8B5C2408             MOV EBX,dword ptr [ESP + 0x8]
   00867405  55                   PUSH EBP
@@ -733,7 +733,7 @@ LAB_00867470:
 LAB_008674a5:
   008674A5  C3                   RET
 
-; 00867040  _Median<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 00867040  _Median<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   00867040  8B4C2408             MOV ECX,dword ptr [ESP + 0x8]
   00867044  83EC08               SUB ESP,0x8
   00867047  55                   PUSH EBP
@@ -799,7 +799,7 @@ LAB_008670c8:
   008670D9  83C408               ADD ESP,0x8
   008670DC  C3                   RET
 
-; 00867120  _Median<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 00867120  _Median<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   00867120  51                   PUSH ECX
   00867121  8B4C240C             MOV ECX,dword ptr [ESP + 0xc]
   00867125  56                   PUSH ESI
@@ -868,7 +868,7 @@ LAB_008671a3:
   008671B7  59                   POP ECX
   008671B8  C3                   RET
 
-; 00866BE0  _Unguarded_partition<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 00866BE0  _Unguarded_partition<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   00866BE0  51                   PUSH ECX
   00866BE1  8B4C2410             MOV ECX,dword ptr [ESP + 0x10]
   00866BE5  53                   PUSH EBX
@@ -1081,7 +1081,7 @@ LAB_00866da0:
   00866DAD  59                   POP ECX
   00866DAE  C3                   RET
 
-; 00866DB0  _Unguarded_partition<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 00866DB0  _Unguarded_partition<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   00866DB0  51                   PUSH ECX
   00866DB1  8B4C2410             MOV ECX,dword ptr [ESP + 0x10]
   00866DB5  53                   PUSH EBX
@@ -1311,7 +1311,7 @@ LAB_00867027:
   00867034  59                   POP ECX
   00867035  C3                   RET
 
-; 00866A00  _Sort<GfxStaticModelDrawInst_const_*_*,int,bool_(__cdecl*)(GfxStaticModelDrawInst_const_*,GfxStaticModelDrawInst_const_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 00866A00  _Sort<GfxStaticModelDrawInst_const_*_*,int,bool_(__cdecl*)(GfxStaticModelDrawInst_const_*,GfxStaticModelDrawInst_const_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   00866A00  55                   PUSH EBP
   00866A01  8BEC                 MOV EBP,ESP
   00866A03  83E4F8               AND ESP,0xfffffff8
@@ -1426,7 +1426,7 @@ LAB_00866ad8:
   00866AED  5D                   POP EBP
   00866AEE  C3                   RET
 
-; 00866AF0  _Sort<GfxSModelSurfStats_*,int,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 00866AF0  _Sort<GfxSModelSurfStats_*,int,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   00866AF0  55                   PUSH EBP
   00866AF1  8BEC                 MOV EBP,ESP
   00866AF3  83E4F8               AND ESP,0xfffffff8

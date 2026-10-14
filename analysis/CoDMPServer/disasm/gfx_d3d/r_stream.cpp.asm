@@ -2333,7 +2333,7 @@ LAB_00aa22cc:
   00AA22F1  5D                   POP EBP
   00AA22F2  C3                   RET
 
-; 00AA7070  _Push_heap<int_*,int,int,importance_and_offset_pred>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2013)
+; 00AA7070  _Push_heap<int_*,int,int,importance_and_offset_pred>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2013)
   00AA7070  55                   PUSH EBP
   00AA7071  8BEC                 MOV EBP,ESP
   00AA7073  83EC08               SUB ESP,0x8
@@ -2476,7 +2476,7 @@ LAB_00aa2356:
   00AA2398  5D                   POP EBP
   00AA2399  C3                   RET
 
-; 00AA6F40  _Adjust_heap<int_*,int,int,importance_and_offset_pred>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 00AA6F40  _Adjust_heap<int_*,int,int,importance_and_offset_pred>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   00AA6F40  55                   PUSH EBP
   00AA6F41  8BEC                 MOV EBP,ESP
   00AA6F43  83EC14               SUB ESP,0x14
@@ -2555,7 +2555,7 @@ LAB_00aa6fed:
   00AA700D  5D                   POP EBP
   00AA700E  C3                   RET
 
-; 00AA7010  pop_heap<int_*,importance_and_offset_pred>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2151)
+; 00AA7010  pop_heap<int_*,importance_and_offset_pred>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2151)
   00AA7010  55                   PUSH EBP
   00AA7011  8BEC                 MOV EBP,ESP
   00AA7013  83EC28               SUB ESP,0x28
@@ -2733,7 +2733,7 @@ LAB_00aa2542:
   00AA2544  5D                   POP EBP
   00AA2545  C3                   RET
 
-; 00AA6BD0  make_heap<int_*,importance_and_offset_pred>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 00AA6BD0  make_heap<int_*,importance_and_offset_pred>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   00AA6BD0  55                   PUSH EBP
   00AA6BD1  8BEC                 MOV EBP,ESP
   00AA6BD3  83EC2C               SUB ESP,0x2c
@@ -3459,7 +3459,7 @@ LAB_00aa2990:
   00AA299E  5D                   POP EBP
   00AA299F  C3                   RET
 
-; 00AA6D30  _Insertion_sort1<int_*,importance_and_offset_pred,int>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 00AA6D30  _Insertion_sort1<int_*,importance_and_offset_pred,int>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   00AA6D30  55                   PUSH EBP
   00AA6D31  8BEC                 MOV EBP,ESP
   00AA6D33  83EC3C               SUB ESP,0x3c
@@ -3548,7 +3548,7 @@ LAB_00aa6e22:
   00AA6E24  5D                   POP EBP
   00AA6E25  C3                   RET
 
-; 00AA6E30  _Med3<int_*,importance_and_offset_pred>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3156)
+; 00AA6E30  _Med3<int_*,importance_and_offset_pred>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3156)
   00AA6E30  55                   PUSH EBP
   00AA6E31  8BEC                 MOV EBP,ESP
   00AA6E33  83EC18               SUB ESP,0x18
@@ -3640,7 +3640,7 @@ LAB_00aa6f32:
   00AA6F34  5D                   POP EBP
   00AA6F35  C3                   RET
 
-; 00AA6C40  _Median<int_*,importance_and_offset_pred>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 00AA6C40  _Median<int_*,importance_and_offset_pred>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   00AA6C40  55                   PUSH EBP
   00AA6C41  8BEC                 MOV EBP,ESP
   00AA6C43  83EC7C               SUB ESP,0x7c
@@ -3859,7 +3859,7 @@ LAB_00aa2b04:
   00AA2B06  5D                   POP EBP
   00AA2B07  C3                   RET
 
-; 00AA6790  _Unguarded_partition<int_*,importance_and_offset_pred>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 00AA6790  _Unguarded_partition<int_*,importance_and_offset_pred>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   00AA6790  55                   PUSH EBP
   00AA6791  8BEC                 MOV EBP,ESP
   00AA6793  81EC80000000         SUB ESP,0x80
@@ -4241,7 +4241,7 @@ LAB_00aa6bcb:
   00AA6BCD  5D                   POP EBP
   00AA6BCE  C3                   RET
 
-; 00AA6620  _Sort<int_*,int,importance_and_offset_pred>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 00AA6620  _Sort<int_*,int,importance_and_offset_pred>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   00AA6620  55                   PUSH EBP
   00AA6621  8BEC                 MOV EBP,ESP
   00AA6623  81EC0C010000         SUB ESP,0x10c

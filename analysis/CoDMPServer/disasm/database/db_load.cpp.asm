@@ -2070,7 +2070,7 @@ LAB_00580edd:
   00580EE4  5D                   POP EBP
   00580EE5  C3                   RET
 
-; 00581BC0  Load_DynEntityDef  (dynentity/dynentity_load_db.h:610)
+; 00581BC0  Load_DynEntityDef  (DynEntity/dynentity_load_db.h:610)
   00581BC0  55                   PUSH EBP
   00581BC1  8BEC                 MOV EBP,ESP
   00581BC3  6A54                 PUSH 0x54
@@ -2623,7 +2623,7 @@ LAB_0058370e:
   0058370E  5D                   POP EBP
   0058370F  C3                   RET
 
-; 00581C90  Load_DynEntityDefArray  (dynentity/dynentity_load_db.h:705)
+; 00581C90  Load_DynEntityDefArray  (DynEntity/dynentity_load_db.h:705)
   00581C90  55                   PUSH EBP
   00581C91  8BEC                 MOV EBP,ESP
   00581C93  83EC08               SUB ESP,0x8
@@ -3018,7 +3018,7 @@ LAB_00580ff3:
   00587E95  5D                   POP EBP
   00587E96  C3                   RET
 
-; 00581D00  Load_DynEntityPoseArray  (dynentity/dynentity_load_db.h:760)
+; 00581D00  Load_DynEntityPoseArray  (DynEntity/dynentity_load_db.h:760)
   00581D00  55                   PUSH EBP
   00581D01  8BEC                 MOV EBP,ESP
   00581D03  8B450C               MOV EAX,dword ptr [EBP + 0xc]
@@ -3247,7 +3247,7 @@ LAB_00588aa9:
   00588AA9  5D                   POP EBP
   00588AAA  C3                   RET
 
-; 00581D20  Load_DynEntityCollArray  (dynentity/dynentity_load_db.h:815)
+; 00581D20  Load_DynEntityCollArray  (DynEntity/dynentity_load_db.h:815)
   00581D20  55                   PUSH EBP
   00581D21  8BEC                 MOV EBP,ESP
   00581D23  8B450C               MOV EAX,dword ptr [EBP + 0xc]
@@ -3848,7 +3848,7 @@ LAB_0058b97f:
   0058B97F  5D                   POP EBP
   0058B980  C3                   RET
 
-; 00581D40  Load_DynEntityClientArray  (dynentity/dynentity_load_db.h:870)
+; 00581D40  Load_DynEntityClientArray  (DynEntity/dynentity_load_db.h:870)
   00581D40  55                   PUSH EBP
   00581D41  8BEC                 MOV EBP,ESP
   00581D43  8B450C               MOV EAX,dword ptr [EBP + 0xc]
@@ -4173,7 +4173,7 @@ LAB_0057d559:
   0057D559  5D                   POP EBP
   0057D55A  C3                   RET
 
-; 00581D60  Load_DynEntityServerArray  (dynentity/dynentity_load_db.h:925)
+; 00581D60  Load_DynEntityServerArray  (DynEntity/dynentity_load_db.h:925)
   00581D60  55                   PUSH EBP
   00581D61  8BEC                 MOV EBP,ESP
   00581D63  8B450C               MOV EAX,dword ptr [EBP + 0xc]
@@ -4614,7 +4614,7 @@ LAB_0057d589:
   0057D589  5D                   POP EBP
   0057D58A  C3                   RET
 
-; 00581D80  Mark_DynEntityDef  (dynentity/dynentity_load_db.h:1011)
+; 00581D80  Mark_DynEntityDef  (DynEntity/dynentity_load_db.h:1011)
   00581D80  55                   PUSH EBP
   00581D81  8BEC                 MOV EBP,ESP
   00581D83  A1E46CDA02           MOV EAX,[0x02da6ce4]
@@ -4941,7 +4941,7 @@ LAB_00580873:
   0057F0C2  5D                   POP EBP
   0057F0C3  C3                   RET
 
-; 00581E10  Mark_DynEntityDefArray  (dynentity/dynentity_load_db.h:1095)
+; 00581E10  Mark_DynEntityDefArray  (DynEntity/dynentity_load_db.h:1095)
   00581E10  55                   PUSH EBP
   00581E11  8BEC                 MOV EBP,ESP
   00581E13  83EC08               SUB ESP,0x8
@@ -9545,7 +9545,7 @@ LAB_005802fd:
   00580304  5D                   POP EBP
   00580305  C3                   RET
 
-; 005810A0  Load_FxEffectDefHandle  (effectscore/fx_effect_load_db.h:2995)
+; 005810A0  Load_FxEffectDefHandle  (EffectsCore/fx_effect_load_db.h:2995)
   005810A0  55                   PUSH EBP
   005810A1  8BEC                 MOV EBP,ESP
   005810A3  83EC0C               SUB ESP,0xc
@@ -9752,7 +9752,7 @@ LAB_00580370:
   0057B218  5D                   POP EBP
   0057B219  C3                   RET
 
-; 00581170  Load_FxEffectDefHandleArray  (effectscore/fx_effect_load_db.h:3034)
+; 00581170  Load_FxEffectDefHandleArray  (EffectsCore/fx_effect_load_db.h:3034)
   00581170  55                   PUSH EBP
   00581171  8BEC                 MOV EBP,ESP
   00581173  83EC08               SUB ESP,0x8
@@ -9824,7 +9824,7 @@ LAB_005811d0:
   005803AE  5D                   POP EBP
   005803AF  C3                   RET
 
-; 005811E0  Load_FxEffectDefRef  (effectscore/fx_effect_load_db.h:3074)
+; 005811E0  Load_FxEffectDefRef  (EffectsCore/fx_effect_load_db.h:3074)
   005811E0  55                   PUSH EBP
   005811E1  8BEC                 MOV EBP,ESP
   005811E3  A1F46ADA02           MOV EAX,[0x02da6af4]
@@ -10012,7 +10012,7 @@ LAB_00580489:
   00580489  5D                   POP EBP
   0058048A  C3                   RET
 
-; 00581210  Load_FxElemMarkVisuals  (effectscore/fx_effect_load_db.h:3131)
+; 00581210  Load_FxElemMarkVisuals  (EffectsCore/fx_effect_load_db.h:3131)
   00581210  55                   PUSH EBP
   00581211  8BEC                 MOV EBP,ESP
   00581213  6A08                 PUSH 0x8
@@ -10046,7 +10046,7 @@ LAB_00580489:
   0057D97D  5D                   POP EBP
   0057D97E  C3                   RET
 
-; 00581250  Load_FxElemMarkVisualsArray  (effectscore/fx_effect_load_db.h:3151)
+; 00581250  Load_FxElemMarkVisualsArray  (EffectsCore/fx_effect_load_db.h:3151)
   00581250  55                   PUSH EBP
   00581251  8BEC                 MOV EBP,ESP
   00581253  83EC08               SUB ESP,0x8
@@ -10100,7 +10100,7 @@ LAB_005812b0:
   0057C66E  5D                   POP EBP
   0057C66F  C3                   RET
 
-; 005812C0  Load_FxElemVisuals  (effectscore/fx_effect_load_db.h:3191)
+; 005812C0  Load_FxElemVisuals  (EffectsCore/fx_effect_load_db.h:3191)
   005812C0  55                   PUSH EBP
   005812C1  8BEC                 MOV EBP,ESP
   005812C3  A1546DDA02           MOV EAX,[0x02da6d54]
@@ -10312,7 +10312,7 @@ LAB_0058255a:
   0057C68E  5D                   POP EBP
   0057C68F  C3                   RET
 
-; 00581390  Load_FxElemVisualsArray  (effectscore/fx_effect_load_db.h:3252)
+; 00581390  Load_FxElemVisualsArray  (EffectsCore/fx_effect_load_db.h:3252)
   00581390  55                   PUSH EBP
   00581391  8BEC                 MOV EBP,ESP
   00581393  83EC08               SUB ESP,0x8
@@ -10351,7 +10351,7 @@ LAB_005813f0:
   005813F2  5D                   POP EBP
   005813F3  C3                   RET
 
-; 00581400  Load_FxElemSpawnSound  (effectscore/fx_effect_load_db.h:3292)
+; 00581400  Load_FxElemSpawnSound  (EffectsCore/fx_effect_load_db.h:3292)
   00581400  55                   PUSH EBP
   00581401  8BEC                 MOV EBP,ESP
   00581403  6A04                 PUSH 0x4
@@ -10511,7 +10511,7 @@ LAB_005825c0:
   00582611  5D                   POP EBP
   00582612  C3                   RET
 
-; 00581430  Load_FxElemVisStateSampleArray  (effectscore/fx_effect_load_db.h:3457)
+; 00581430  Load_FxElemVisStateSampleArray  (EffectsCore/fx_effect_load_db.h:3457)
   00581430  55                   PUSH EBP
   00581431  8BEC                 MOV EBP,ESP
   00581433  8B450C               MOV EAX,dword ptr [EBP + 0xc]
@@ -11452,7 +11452,7 @@ LAB_0057e022:
   0057E022  5D                   POP EBP
   0057E023  C3                   RET
 
-; 00581450  Load_FxElemVelStateSampleArray  (effectscore/fx_effect_load_db.h:3652)
+; 00581450  Load_FxElemVelStateSampleArray  (EffectsCore/fx_effect_load_db.h:3652)
   00581450  55                   PUSH EBP
   00581451  8BEC                 MOV EBP,ESP
   00581453  8B450C               MOV EAX,dword ptr [EBP + 0xc]
@@ -11888,7 +11888,7 @@ LAB_0058314d:
   00583154  5D                   POP EBP
   00583155  C3                   RET
 
-; 00581470  Load_FxElemDefVisuals  (effectscore/fx_effect_load_db.h:3980)
+; 00581470  Load_FxElemDefVisuals  (EffectsCore/fx_effect_load_db.h:3980)
   00581470  55                   PUSH EBP
   00581471  8BEC                 MOV EBP,ESP
   00581473  A1546DDA02           MOV EAX,[0x02da6d54]
@@ -12165,7 +12165,7 @@ LAB_005831c0:
   0057B41D  5D                   POP EBP
   0057B41E  C3                   RET
 
-; 00581530  Load_FxTrailVertexArray  (effectscore/fx_effect_load_db.h:4093)
+; 00581530  Load_FxTrailVertexArray  (EffectsCore/fx_effect_load_db.h:4093)
   00581530  55                   PUSH EBP
   00581531  8BEC                 MOV EBP,ESP
   00581533  8B450C               MOV EAX,dword ptr [EBP + 0xc]
@@ -12335,7 +12335,7 @@ LAB_0057dac7:
   0057DD24  5D                   POP EBP
   0057DD25  C3                   RET
 
-; 00581550  Load_FxTrailDef  (effectscore/fx_effect_load_db.h:4133)
+; 00581550  Load_FxTrailDef  (EffectsCore/fx_effect_load_db.h:4133)
   00581550  55                   PUSH EBP
   00581551  8BEC                 MOV EBP,ESP
   00581553  6A1C                 PUSH 0x1c
@@ -12612,7 +12612,7 @@ LAB_0057de60:
   0057DE62  5D                   POP EBP
   0057DE63  C3                   RET
 
-; 005815F0  Load_FxElemDef  (effectscore/fx_effect_load_db.h:4369)
+; 005815F0  Load_FxElemDef  (EffectsCore/fx_effect_load_db.h:4369)
   005815F0  55                   PUSH EBP
   005815F1  8BEC                 MOV EBP,ESP
   005815F3  6824010000           PUSH 0x124
@@ -12907,7 +12907,7 @@ LAB_0057b670:
   0057B672  5D                   POP EBP
   0057B673  C3                   RET
 
-; 00581790  Load_FxElemDefArray  (effectscore/fx_effect_load_db.h:4610)
+; 00581790  Load_FxElemDefArray  (EffectsCore/fx_effect_load_db.h:4610)
   00581790  55                   PUSH EBP
   00581791  8BEC                 MOV EBP,ESP
   00581793  83EC08               SUB ESP,0x8
@@ -12982,7 +12982,7 @@ LAB_0057b6e7:
   0057B6E7  5D                   POP EBP
   0057B6E8  C3                   RET
 
-; 00581800  Load_FxEffectDef  (effectscore/fx_effect_load_db.h:4650)
+; 00581800  Load_FxEffectDef  (EffectsCore/fx_effect_load_db.h:4650)
   00581800  55                   PUSH EBP
   00581801  8BEC                 MOV EBP,ESP
   00581803  6A3C                 PUSH 0x3c
@@ -13406,7 +13406,7 @@ LAB_00583ae1:
   0057E2C8  5D                   POP EBP
   0057E2C9  C3                   RET
 
-; 00581890  Mark_FxEffectDefHandle  (effectscore/fx_effect_load_db.h:4990)
+; 00581890  Mark_FxEffectDefHandle  (EffectsCore/fx_effect_load_db.h:4990)
   00581890  55                   PUSH EBP
   00581891  8BEC                 MOV EBP,ESP
   00581893  A18C6BDA02           MOV EAX,[0x02da6b8c]
@@ -13424,7 +13424,7 @@ LAB_005818be:
   005818BE  5D                   POP EBP
   005818BF  C3                   RET
 
-; 005818C0  Mark_FxEffectDefHandleArray  (effectscore/fx_effect_load_db.h:5003)
+; 005818C0  Mark_FxEffectDefHandleArray  (EffectsCore/fx_effect_load_db.h:5003)
   005818C0  55                   PUSH EBP
   005818C1  8BEC                 MOV EBP,ESP
   005818C3  83EC08               SUB ESP,0x8
@@ -13500,7 +13500,7 @@ LAB_0057cb29:
   0057E2E8  5D                   POP EBP
   0057E2E9  C3                   RET
 
-; 00581910  Mark_FxElemMarkVisuals  (effectscore/fx_effect_load_db.h:5052)
+; 00581910  Mark_FxElemMarkVisuals  (EffectsCore/fx_effect_load_db.h:5052)
   00581910  55                   PUSH EBP
   00581911  8BEC                 MOV EBP,ESP
   00581913  A1046ADA02           MOV EAX,[0x02da6a04]
@@ -13511,7 +13511,7 @@ LAB_0057cb29:
   00581927  5D                   POP EBP
   00581928  C3                   RET
 
-; 00581930  Mark_FxElemMarkVisualsArray  (effectscore/fx_effect_load_db.h:5061)
+; 00581930  Mark_FxElemMarkVisualsArray  (EffectsCore/fx_effect_load_db.h:5061)
   00581930  55                   PUSH EBP
   00581931  8BEC                 MOV EBP,ESP
   00581933  83EC08               SUB ESP,0x8
@@ -13539,7 +13539,7 @@ LAB_00581970:
   00581972  5D                   POP EBP
   00581973  C3                   RET
 
-; 00581980  Mark_FxElemVisuals  (effectscore/fx_effect_load_db.h:5081)
+; 00581980  Mark_FxElemVisuals  (EffectsCore/fx_effect_load_db.h:5081)
   00581980  55                   PUSH EBP
   00581981  8BEC                 MOV EBP,ESP
   00581983  A1546DDA02           MOV EAX,[0x02da6d54]
@@ -13704,7 +13704,7 @@ LAB_0057e3ec:
   0057E3EC  5D                   POP EBP
   0057E3ED  C3                   RET
 
-; 00581A10  Mark_FxElemVisualsArray  (effectscore/fx_effect_load_db.h:5121)
+; 00581A10  Mark_FxElemVisualsArray  (EffectsCore/fx_effect_load_db.h:5121)
   00581A10  55                   PUSH EBP
   00581A11  8BEC                 MOV EBP,ESP
   00581A13  83EC08               SUB ESP,0x8
@@ -14050,7 +14050,7 @@ LAB_00583cd7:
   00583CD7  5D                   POP EBP
   00583CD8  C3                   RET
 
-; 00581A60  Mark_FxElemDefVisuals  (effectscore/fx_effect_load_db.h:5515)
+; 00581A60  Mark_FxElemDefVisuals  (EffectsCore/fx_effect_load_db.h:5515)
   00581A60  55                   PUSH EBP
   00581A61  8BEC                 MOV EBP,ESP
   00581A63  A1546DDA02           MOV EAX,[0x02da6d54]
@@ -14310,7 +14310,7 @@ LAB_00583db4:
   00583DB4  5D                   POP EBP
   00583DB5  C3                   RET
 
-; 00581B00  Mark_FxElemDef  (effectscore/fx_effect_load_db.h:5748)
+; 00581B00  Mark_FxElemDef  (EffectsCore/fx_effect_load_db.h:5748)
   00581B00  55                   PUSH EBP
   00581B01  8BEC                 MOV EBP,ESP
   00581B03  8B15546DDA02         MOV EDX,dword ptr [0x02da6d54]
@@ -14602,7 +14602,7 @@ LAB_0057e920:
   0057E922  5D                   POP EBP
   0057E923  C3                   RET
 
-; 00581B20  Mark_FxElemDefArray  (effectscore/fx_effect_load_db.h:5981)
+; 00581B20  Mark_FxElemDefArray  (EffectsCore/fx_effect_load_db.h:5981)
   00581B20  55                   PUSH EBP
   00581B21  8BEC                 MOV EBP,ESP
   00581B23  83EC08               SUB ESP,0x8
@@ -14630,7 +14630,7 @@ LAB_00581b63:
   00581B65  5D                   POP EBP
   00581B66  C3                   RET
 
-; 00581B70  Mark_FxEffectDef  (effectscore/fx_effect_load_db.h:6001)
+; 00581B70  Mark_FxEffectDef  (EffectsCore/fx_effect_load_db.h:6001)
   00581B70  55                   PUSH EBP
   00581B71  8BEC                 MOV EBP,ESP
   00581B73  A1F46BDA02           MOV EAX,[0x02da6bf4]

@@ -566,7 +566,7 @@ LAB_0046310c:
   0046310E  5D                   POP EBP
   0046310F  C3                   RET
 
-; 00464000  _Push_heap<WeaponComponent_*,int,WeaponComponent,compare_weapon_component_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2013)
+; 00464000  _Push_heap<WeaponComponent_*,int,WeaponComponent,compare_weapon_component_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2013)
   00464000  55                   PUSH EBP
   00464001  8BEC                 MOV EBP,ESP
   00464003  83EC10               SUB ESP,0x10
@@ -646,7 +646,7 @@ LAB_004640a4:
   004640BB  5D                   POP EBP
   004640BC  C3                   RET
 
-; 00463E30  _Adjust_heap<WeaponComponent_*,int,WeaponComponent,compare_weapon_component_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 00463E30  _Adjust_heap<WeaponComponent_*,int,WeaponComponent,compare_weapon_component_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   00463E30  55                   PUSH EBP
   00463E31  8BEC                 MOV EBP,ESP
   00463E33  83EC28               SUB ESP,0x28
@@ -759,7 +759,7 @@ LAB_00463f24:
   00463F50  5D                   POP EBP
   00463F51  C3                   RET
 
-; 004638D0  make_heap<WeaponComponent_*,compare_weapon_component_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 004638D0  make_heap<WeaponComponent_*,compare_weapon_component_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   004638D0  55                   PUSH EBP
   004638D1  8BEC                 MOV EBP,ESP
   004638D3  83EC6C               SUB ESP,0x6c
@@ -822,7 +822,7 @@ LAB_0046395f:
   00463963  5D                   POP EBP
   00463964  C3                   RET
 
-; 00463A70  _Sort_heap<WeaponComponent_*,compare_weapon_component_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2232)
+; 00463A70  _Sort_heap<WeaponComponent_*,compare_weapon_component_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2232)
   00463A70  55                   PUSH EBP
   00463A71  8BEC                 MOV EBP,ESP
   00463A73  83EC70               SUB ESP,0x70
@@ -894,7 +894,7 @@ LAB_00463b1e:
   00463B22  5D                   POP EBP
   00463B23  C3                   RET
 
-; 00463B30  _Insertion_sort1<WeaponComponent_*,compare_weapon_component_sort,WeaponComponent>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 00463B30  _Insertion_sort1<WeaponComponent_*,compare_weapon_component_sort,WeaponComponent>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   00463B30  55                   PUSH EBP
   00463B31  8BEC                 MOV EBP,ESP
   00463B33  83EC6C               SUB ESP,0x6c
@@ -1024,7 +1024,7 @@ LAB_00463c66:
   00463C74  5D                   POP EBP
   00463C75  C3                   RET
 
-; 00463C80  _Med3<WeaponComponent_*,compare_weapon_component_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3156)
+; 00463C80  _Med3<WeaponComponent_*,compare_weapon_component_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3156)
   00463C80  55                   PUSH EBP
   00463C81  8BEC                 MOV EBP,ESP
   00463C83  81EC9C000000         SUB ESP,0x9c
@@ -1183,7 +1183,7 @@ LAB_00463e15:
   00463E23  5D                   POP EBP
   00463E24  C3                   RET
 
-; 00463970  _Median<WeaponComponent_*,compare_weapon_component_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 00463970  _Median<WeaponComponent_*,compare_weapon_component_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   00463970  55                   PUSH EBP
   00463971  8BEC                 MOV EBP,ESP
   00463973  81EC08030000         SUB ESP,0x308
@@ -1284,7 +1284,7 @@ LAB_00463a68:
   00463A6A  5D                   POP EBP
   00463A6B  C3                   RET
 
-; 00463250  _Unguarded_partition<WeaponComponent_*,compare_weapon_component_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 00463250  _Unguarded_partition<WeaponComponent_*,compare_weapon_component_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   00463250  55                   PUSH EBP
   00463251  8BEC                 MOV EBP,ESP
   00463253  81ECB8010000         SUB ESP,0x1b8
@@ -1840,7 +1840,7 @@ LAB_004638b3:
   004638C1  5D                   POP EBP
   004638C2  C3                   RET
 
-; 00463110  _Sort<WeaponComponent_*,int,compare_weapon_component_sort>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 00463110  _Sort<WeaponComponent_*,int,compare_weapon_component_sort>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   00463110  55                   PUSH EBP
   00463111  8BEC                 MOV EBP,ESP
   00463113  81ECA8020000         SUB ESP,0x2a8
@@ -1962,7 +1962,7 @@ LAB_0046324b:
   0046324E  5D                   POP EBP
   0046324F  C3                   RET
 
-; 00463F60  unchecked_copy_backward<WeaponComponent_*,WeaponComponent_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xutility:3636)
+; 00463F60  unchecked_copy_backward<WeaponComponent_*,WeaponComponent_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xutility:3636)
   00463F60  55                   PUSH EBP
   00463F61  8BEC                 MOV EBP,ESP
   00463F63  83EC30               SUB ESP,0x30

@@ -1722,7 +1722,7 @@ LAB_006cf8e6:
   006CF8F2  5D                   POP EBP
   006CF8F3  C3                   RET
 
-; 006D11B0  _Adjust_heap<MapProfileHotSpot_*,int,MapProfileHotSpot,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 006D11B0  _Adjust_heap<MapProfileHotSpot_*,int,MapProfileHotSpot,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   006D11B0  55                   PUSH EBP
   006D11B1  8BEC                 MOV EBP,ESP
   006D11B3  83EC28               SUB ESP,0x28
@@ -1890,7 +1890,7 @@ LAB_006d1332:
   006D1360  5D                   POP EBP
   006D1361  C3                   RET
 
-; 006D0300  make_heap<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 006D0300  make_heap<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   006D0300  55                   PUSH EBP
   006D0301  8BEC                 MOV EBP,ESP
   006D0303  83EC58               SUB ESP,0x58
@@ -1967,7 +1967,7 @@ LAB_006d03c2:
   006D03C4  5D                   POP EBP
   006D03C5  C3                   RET
 
-; 006D0F70  _Sort_heap<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2232)
+; 006D0F70  _Sort_heap<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2232)
   006D0F70  55                   PUSH EBP
   006D0F71  8BEC                 MOV EBP,ESP
   006D0F73  83EC58               SUB ESP,0x58
@@ -2063,7 +2063,7 @@ LAB_006d106c:
   006D106E  5D                   POP EBP
   006D106F  C3                   RET
 
-; 006D1070  _Insertion_sort1<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&),MapProfileHotSpot>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 006D1070  _Insertion_sort1<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&),MapProfileHotSpot>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   006D1070  55                   PUSH EBP
   006D1071  8BEC                 MOV EBP,ESP
   006D1073  83EC54               SUB ESP,0x54
@@ -2184,7 +2184,7 @@ LAB_006d11a4:
   006D11A6  5D                   POP EBP
   006D11A7  C3                   RET
 
-; 006D03D0  _Median<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 006D03D0  _Median<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   006D03D0  55                   PUSH EBP
   006D03D1  8BEC                 MOV EBP,ESP
   006D03D3  81EC8C010000         SUB ESP,0x18c
@@ -3045,7 +3045,7 @@ LAB_006d0f5d:
   006D0F5F  5D                   POP EBP
   006D0F60  C3                   RET
 
-; 006CFB90  _Unguarded_partition<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 006CFB90  _Unguarded_partition<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   006CFB90  55                   PUSH EBP
   006CFB91  8BEC                 MOV EBP,ESP
   006CFB93  81EC3C010000         SUB ESP,0x13c
@@ -3603,7 +3603,7 @@ LAB_006d02fa:
   006D02FC  5D                   POP EBP
   006D02FD  C3                   RET
 
-; 006CFA50  _Sort<MapProfileHotSpot_*,int,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 006CFA50  _Sort<MapProfileHotSpot_*,int,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   006CFA50  55                   PUSH EBP
   006CFA51  8BEC                 MOV EBP,ESP
   006CFA53  81ECBC010000         SUB ESP,0x1bc
@@ -3725,7 +3725,7 @@ LAB_006cfb85:
   006CFB88  5D                   POP EBP
   006CFB89  C3                   RET
 
-; 006D1370  unchecked_copy_backward<MapProfileHotSpot_*,MapProfileHotSpot_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/xutility:3636)
+; 006D1370  unchecked_copy_backward<MapProfileHotSpot_*,MapProfileHotSpot_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xutility:3636)
   006D1370  55                   PUSH EBP
   006D1371  8BEC                 MOV EBP,ESP
   006D1373  83EC30               SUB ESP,0x30

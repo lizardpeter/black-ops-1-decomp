@@ -8134,7 +8134,7 @@ LAB_007c1a50:
   007C1C4D  5D                   POP EBP
   007C1C4E  C3                   RET
 
-; 00B07E70  _Adjust_heap<dvar_s_const_*_*,int,dvar_s_const_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2108)
+; 00B07E70  _Adjust_heap<dvar_s_const_*_*,int,dvar_s_const_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2108)
   00B07E70  55                   PUSH EBP
   00B07E71  8BEC                 MOV EBP,ESP
   00B07E73  83EC10               SUB ESP,0x10
@@ -8536,7 +8536,7 @@ LAB_007c1f51:
   007C1F5D  5D                   POP EBP
   007C1F5E  C3                   RET
 
-; 00B07F80  pop_heap<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2151)
+; 00B07F80  pop_heap<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2151)
   00B07F80  55                   PUSH EBP
   00B07F81  8BEC                 MOV EBP,ESP
   00B07F83  83EC24               SUB ESP,0x24
@@ -8804,7 +8804,7 @@ LAB_007c21cd:
   007C21D9  5D                   POP EBP
   007C21DA  C3                   RET
 
-; 007C3FA0  make_heap<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:2203)
+; 007C3FA0  make_heap<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2203)
   007C3FA0  55                   PUSH EBP
   007C3FA1  8BEC                 MOV EBP,ESP
   007C3FA3  83EC28               SUB ESP,0x28
@@ -11307,7 +11307,7 @@ LAB_007c3ef7:
   007C3F03  5D                   POP EBP
   007C3F04  C3                   RET
 
-; 00AD9BF0  _Insertion_sort1<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*),dvar_s_const_*>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3123)
+; 00AD9BF0  _Insertion_sort1<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*),dvar_s_const_*>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
   00AD9BF0  55                   PUSH EBP
   00AD9BF1  8BEC                 MOV EBP,ESP
   00AD9BF3  83EC34               SUB ESP,0x34
@@ -11451,7 +11451,7 @@ LAB_007c3f9e:
   007C3F9E  5D                   POP EBP
   007C3F9F  C3                   RET
 
-; 00B07DB0  _Med3<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3156)
+; 00B07DB0  _Med3<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3156)
   00B07DB0  55                   PUSH EBP
   00B07DB1  8BEC                 MOV EBP,ESP
   00B07DB3  83EC0C               SUB ESP,0xc
@@ -11534,7 +11534,7 @@ LAB_00b07e67:
   00B07E69  5D                   POP EBP
   00B07E6A  C3                   RET
 
-; 00B07CC0  _Median<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3168)
+; 00B07CC0  _Median<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3168)
   00B07CC0  55                   PUSH EBP
   00B07CC1  8BEC                 MOV EBP,ESP
   00B07CC3  83EC40               SUB ESP,0x40
@@ -11631,7 +11631,7 @@ LAB_00b07da6:
   00B07DA8  5D                   POP EBP
   00B07DA9  C3                   RET
 
-; 00B07950  _Unguarded_partition<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3185)
+; 00B07950  _Unguarded_partition<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
   00B07950  55                   PUSH EBP
   00B07951  8BEC                 MOV EBP,ESP
   00B07953  83EC6C               SUB ESP,0x6c
@@ -11989,7 +11989,7 @@ LAB_00b07cb4:
   00B07CB6  5D                   POP EBP
   00B07CB7  C3                   RET
 
-; 00B077E0  _Sort<dvar_s_const_*_*,int,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/algorithm:3244)
+; 00B077E0  _Sort<dvar_s_const_*_*,int,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3244)
   00B077E0  55                   PUSH EBP
   00B077E1  8BEC                 MOV EBP,ESP
   00B077E3  81ECE4000000         SUB ESP,0xe4

@@ -77,7 +77,7 @@ LAB_006f7e76:
   006F7E7B  5D                   POP EBP
   006F7E7C  C3                   RET
 
-; 006F9290  dwFileTask  (dw/dwstorage.h:68)
+; 006F9290  dwFileTask  (DW/dwstorage.h:68)
   006F9290  55                   PUSH EBP
   006F9291  8BEC                 MOV EBP,ESP
   006F9293  51                   PUSH ECX

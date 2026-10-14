@@ -487,7 +487,7 @@ LAB_00942dcc:
   00942DD2  5D                   POP EBP
   00942DD3  C3                   RET
 
-; 00942860  cosf  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/math.h:399)
+; 00942860  cosf  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/math.h:399)
   00942860  55                   PUSH EBP
   00942861  8BEC                 MOV EBP,ESP
   00942863  51                   PUSH ECX
@@ -499,7 +499,7 @@ LAB_00942dcc:
   00942874  5D                   POP EBP
   00942875  C3                   RET
 
-; 00944170  logf  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/math.h:409)
+; 00944170  logf  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/math.h:409)
   00944170  55                   PUSH EBP
   00944171  8BEC                 MOV EBP,ESP
   00944173  51                   PUSH ECX
@@ -511,7 +511,7 @@ LAB_00942dcc:
   00944184  5D                   POP EBP
   00944185  C3                   RET
 
-; 00942FE0  powf  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/math.h:417)
+; 00942FE0  powf  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/math.h:417)
   00942FE0  55                   PUSH EBP
   00942FE1  8BEC                 MOV EBP,ESP
   00942FE3  51                   PUSH ECX
@@ -524,7 +524,7 @@ LAB_00942dcc:
   00942FF7  5D                   POP EBP
   00942FF8  C3                   RET
 
-; 00942880  sinf  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/math.h:419)
+; 00942880  sinf  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/math.h:419)
   00942880  55                   PUSH EBP
   00942881  8BEC                 MOV EBP,ESP
   00942883  51                   PUSH ECX
@@ -705,7 +705,7 @@ LAB_00942fd1:
   00942FD3  C9                   LEAVE
   00942FD4  C3                   RET
 
-; 00942840  sqrtf  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/math.h:423)
+; 00942840  sqrtf  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/math.h:423)
   00942840  55                   PUSH EBP
   00942841  8BEC                 MOV EBP,ESP
   00942843  51                   PUSH ECX
@@ -788,7 +788,7 @@ LAB_00943058:
   0094305D  5D                   POP EBP
   0094305E  C3                   RET
 
-; 00942DE0  fabs  (<external>/program files (x86)/microsoft visual studio 9.0/vc/include/math.h:510)
+; 00942DE0  fabs  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/math.h:510)
   00942DE0  55                   PUSH EBP
   00942DE1  8BEC                 MOV EBP,ESP
   00942DE3  51                   PUSH ECX

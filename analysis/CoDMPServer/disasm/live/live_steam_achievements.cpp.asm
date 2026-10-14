@@ -446,7 +446,7 @@ LAB_0097e530:
   0097E532  5D                   POP EBP
   0097E533  C20400               RET 0x4
 
-; 0097E730  Register  (<external>/projects_pc/cod/sdk/steamworks/public/steam/steam_api.h:283)
+; 0097E730  Register  (<external>/projects_pc/cod/sdk/Steamworks/public/steam/steam_api.h:283)
   0097E730  55                   PUSH EBP
   0097E731  8BEC                 MOV EBP,ESP
   0097E733  51                   PUSH ECX
@@ -491,7 +491,7 @@ LAB_0097e796:
   0097E798  5D                   POP EBP
   0097E799  C20800               RET 0x8
 
-; 0097E7A0  Register  (<external>/projects_pc/cod/sdk/steamworks/public/steam/steam_api.h:283)
+; 0097E7A0  Register  (<external>/projects_pc/cod/sdk/Steamworks/public/steam/steam_api.h:283)
   0097E7A0  55                   PUSH EBP
   0097E7A1  8BEC                 MOV EBP,ESP
   0097E7A3  51                   PUSH ECX
@@ -536,7 +536,7 @@ LAB_0097e806:
   0097E808  5D                   POP EBP
   0097E809  C20800               RET 0x8
 
-; 0097E810  Register  (<external>/projects_pc/cod/sdk/steamworks/public/steam/steam_api.h:283)
+; 0097E810  Register  (<external>/projects_pc/cod/sdk/Steamworks/public/steam/steam_api.h:283)
   0097E810  55                   PUSH EBP
   0097E811  8BEC                 MOV EBP,ESP
   0097E813  51                   PUSH ECX
@@ -679,7 +679,7 @@ LAB_0097e5cb:
   0097E603  5D                   POP EBP
   0097E604  C3                   RET
 
-; 0097E710  GetCallbackSizeBytes  (<external>/projects_pc/cod/sdk/steamworks/public/steam/steam_api.h:317)
+; 0097E710  GetCallbackSizeBytes  (<external>/projects_pc/cod/sdk/Steamworks/public/steam/steam_api.h:317)
   0097E710  55                   PUSH EBP
   0097E711  8BEC                 MOV EBP,ESP
   0097E713  51                   PUSH ECX
@@ -689,7 +689,7 @@ LAB_0097e5cb:
   0097E71E  5D                   POP EBP
   0097E71F  C3                   RET
 
-; 0097E720  GetCallbackSizeBytes  (<external>/projects_pc/cod/sdk/steamworks/public/steam/steam_api.h:317)
+; 0097E720  GetCallbackSizeBytes  (<external>/projects_pc/cod/sdk/Steamworks/public/steam/steam_api.h:317)
   0097E720  55                   PUSH EBP
   0097E721  8BEC                 MOV EBP,ESP
   0097E723  51                   PUSH ECX
@@ -755,7 +755,7 @@ LAB_0097e70b:
   0097E70B  5D                   POP EBP
   0097E70C  C3                   RET
 
-; 00C55660  `dynamic_initializer_for_'k_steamIDNil''  (<external>/projects_pc/cod/sdk/steamworks/public/steam/steamclientpublic.h:650)
+; 00C55660  `dynamic_initializer_for_'k_steamIDNil''  (<external>/projects_pc/cod/sdk/Steamworks/public/steam/steamclientpublic.h:650)
   00C55660  55                   PUSH EBP
   00C55661  8BEC                 MOV EBP,ESP
   00C55663  B93430550A           MOV ECX,0xa553034
@@ -763,7 +763,7 @@ LAB_0097e70b:
   00C5566D  5D                   POP EBP
   00C5566E  C3                   RET
 
-; 00C55670  `dynamic_initializer_for_'k_steamIDOutofDateGS''  (<external>/projects_pc/cod/sdk/steamworks/public/steam/steamclientpublic.h:654)
+; 00C55670  `dynamic_initializer_for_'k_steamIDOutofDateGS''  (<external>/projects_pc/cod/sdk/Steamworks/public/steam/steamclientpublic.h:654)
   00C55670  55                   PUSH EBP
   00C55671  8BEC                 MOV EBP,ESP
   00C55673  33C0                 XOR EAX,EAX
@@ -794,7 +794,7 @@ LAB_0097e70b:
   00C556D9  5D                   POP EBP
   00C556DA  C3                   RET
 
-; 00C556E0  `dynamic_initializer_for_'k_steamIDLanModeGS''  (<external>/projects_pc/cod/sdk/steamworks/public/steam/steamclientpublic.h:656)
+; 00C556E0  `dynamic_initializer_for_'k_steamIDLanModeGS''  (<external>/projects_pc/cod/sdk/Steamworks/public/steam/steamclientpublic.h:656)
   00C556E0  55                   PUSH EBP
   00C556E1  8BEC                 MOV EBP,ESP
   00C556E3  33C0                 XOR EAX,EAX
@@ -825,7 +825,7 @@ LAB_0097e70b:
   00C5574C  5D                   POP EBP
   00C5574D  C3                   RET
 
-; 00C55750  `dynamic_initializer_for_'k_steamIDNotInitYetGS''  (<external>/projects_pc/cod/sdk/steamworks/public/steam/steamclientpublic.h:659)
+; 00C55750  `dynamic_initializer_for_'k_steamIDNotInitYetGS''  (<external>/projects_pc/cod/sdk/Steamworks/public/steam/steamclientpublic.h:659)
   00C55750  55                   PUSH EBP
   00C55751  8BEC                 MOV EBP,ESP
   00C55753  B801000000           MOV EAX,0x1
@@ -856,7 +856,7 @@ LAB_0097e70b:
   00C557BC  5D                   POP EBP
   00C557BD  C3                   RET
 
-; 00C557C0  `dynamic_initializer_for_'k_steamIDNonSteamGS''  (<external>/projects_pc/cod/sdk/steamworks/public/steam/steamclientpublic.h:662)
+; 00C557C0  `dynamic_initializer_for_'k_steamIDNonSteamGS''  (<external>/projects_pc/cod/sdk/Steamworks/public/steam/steamclientpublic.h:662)
   00C557C0  55                   PUSH EBP
   00C557C1  8BEC                 MOV EBP,ESP
   00C557C3  B802000000           MOV EAX,0x2

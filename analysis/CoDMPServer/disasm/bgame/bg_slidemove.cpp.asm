@@ -45,7 +45,7 @@ LAB_00444dcb:
   00444DCD  5D                   POP EBP
   00444DCE  C20800               RET 0x8
 
-; 004403E0  create  (<external>/projects_pc/cod/codsrc/demonware/bdcore/bdutilities/bdfactory.inl:18)
+; 004403E0  create  (<external>/projects_pc/cod/codsrc/DemonWare/bdcore/bdutilities/bdfactory.inl:18)
   004403E0  55                   PUSH EBP
   004403E1  8BEC                 MOV EBP,ESP
   004403E3  51                   PUSH ECX

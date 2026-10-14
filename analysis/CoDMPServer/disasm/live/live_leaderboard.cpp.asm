@@ -699,7 +699,7 @@ LAB_00967c86:
   00967C88  5D                   POP EBP
   00967C89  C3                   RET
 
-; 0096C260  serialize  (dw/leaderboardinfo.h:252)
+; 0096C260  serialize  (DW/leaderboardinfo.h:252)
   0096C260  55                   PUSH EBP
   0096C261  8BEC                 MOV EBP,ESP
   0096C263  83EC08               SUB ESP,0x8
@@ -729,7 +729,7 @@ LAB_0096c2a2:
   0096C2A4  5D                   POP EBP
   0096C2A5  C20400               RET 0x4
 
-; 0096C2B0  deserialize  (dw/leaderboardinfo.h:261)
+; 0096C2B0  deserialize  (DW/leaderboardinfo.h:261)
   0096C2B0  55                   PUSH EBP
   0096C2B1  8BEC                 MOV EBP,ESP
   0096C2B3  83EC34               SUB ESP,0x34
@@ -1081,7 +1081,7 @@ LAB_00967fe4:
   00967FE6  5D                   POP EBP
   00967FE7  C3                   RET
 
-; 0096C360  GetCallbackSizeBytes  (<external>/projects_pc/cod/sdk/steamworks/public/steam/steam_api.h:317)
+; 0096C360  GetCallbackSizeBytes  (<external>/projects_pc/cod/sdk/Steamworks/public/steam/steam_api.h:317)
   0096C360  55                   PUSH EBP
   0096C361  8BEC                 MOV EBP,ESP
   0096C363  51                   PUSH ECX
