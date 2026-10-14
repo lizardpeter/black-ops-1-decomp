@@ -27,3 +27,4 @@ void AddPointToBounds2D(const float v[2], float mins[2], float maxs[2]);
 void ExpandBounds2D(const float addedmins[2], const float addedmaxs[2], float totalmins[2], float totalmaxs[2]);
 
 void SetPlaneSignbits(cplane_s *out);
+void Rand_Init(int seed);

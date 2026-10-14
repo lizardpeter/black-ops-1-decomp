@@ -13,6 +13,7 @@ Writes:
   analysis/<build>/pdb/functions.tsv   every function the PDB knows: va, size, name, scope, module, source, line, type
   analysis/<build>/pdb/lines.tsv       function start -> (source file, first line) from line tables
   analysis/<build>/pdb/locals.tsv      parameter/local names and types per function, as Ghidra stack offsets
+  analysis/<build>/pdb/statics.tsv     file- and function-static data: source file, scope, name, va, type
   analysis/<build>/pdb/raw/*.txt       llvm-pdbutil dumps the tables were parsed from
   analysis/<build>/map/publics.tsv     linker MAP publics: va, name, flags, lib, obj
 """
@@ -193,6 +194,33 @@ def parse_locals(text, va_of):
     return rows
 
 
+def parse_statics(text, mods, va_of):
+    """S_LDATA32 records per compiland. Scope is '' for file statics, else the enclosing function."""
+    rows, mod, proc_end, proc = [], None, -1, ""
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        m = re.match(r"\s*Mod (\d{4}) \|", line)
+        if m:
+            mod, proc_end, proc = int(m.group(1)), -1, ""
+            continue
+        m = re.match(r"\s*(\d+) \| (S_GPROC32|S_LPROC32|S_LDATA32|S_LTHREAD32) \[size = \d+\] `(.*)`\s*$", line)
+        if not m:
+            continue
+        rec, kind, name = int(m.group(1)), m.group(2), m.group(3)
+        if kind in ("S_GPROC32", "S_LPROC32"):
+            e = re.search(r"end = (\d+)", lines[i + 1])
+            proc, proc_end = name, int(e.group(1)) if e else -1
+            continue
+        if rec > proc_end:
+            proc = ""
+        a = re.search(r"addr = (\d{4}):(\d+)", lines[i + 1])
+        ty = re.search(r"type = 0x[0-9A-F]+ \((.*)\), addr", lines[i + 1])
+        if a and mod is not None and int(a.group(1)) != 0:  # segment 0: absolute/optimised away
+            rows.append([mods.get(mod, {}).get("source", ""), proc, name, va_of(int(a.group(1)), int(a.group(2))),
+                         ty.group(1) if ty else "", "tls" if kind == "S_LTHREAD32" else ""])
+    return rows
+
+
 def parse_lines(text, va_of):
     """First line of each line-table block, keyed by its start address."""
     out, src = {}, ""
@@ -270,6 +298,9 @@ def main():
     for p in procs:
         p[5] = canon(p[5])
     first_line = {va: (canon(s), ln) for va, (s, ln) in first_line.items()}
+    statics = parse_statics(dumps["symbols"], mods, va_of)
+    tsv(out / "pdb" / "statics.tsv", ["source", "scope", "name", "va", "type", "kind"],
+        sorted(([canon(rel_source(r[0])), *r[1:]] for r in statics), key=lambda r: (r[0], r[1], r[2])))
     tsv(out / "pdb" / "modules.tsv", ["module", "obj", "lib", "source"],
         [[m["index"], canon(rel_source(m["obj"])), canon(rel_source(m["lib"])), canon(rel_source(m["source"]))]
          for m in sorted(mods.values(), key=lambda m: m["index"])])

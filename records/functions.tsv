@@ -9,3 +9,4 @@ CoDMPServer	007AD980	matches	src/universal/com_math.cpp	differential test (emula
 CoDMPServer	007ADD10	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007AF0E0	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
 CoDMPServer	007A8D40	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90
+CoDMPServer	007AFA80	matches	src/universal/com_math.cpp	differential test (emulated, original vs recon); not yet byte-matched with VC90

@@ -3,9 +3,14 @@
 // Reconstruction of codsrc/src/universal/com_math.cpp, in original line order.
 // Each function is tagged with its address in build CoDMPServer and its first line in the original file.
 // Status of every function lives in records/functions.tsv.
+#define T5_SOURCE "universal/com_math.cpp"
+
 #include "universal/com_math.h"
 
 #include <math.h>
+#include <t5_static.h>
+
+T5_STATIC unsigned int holdrand T5_AT("", "holdrand");
 
 // 007A7F30  com_math.cpp:190
 int RandWithSeed(int *seed)
@@ -123,4 +128,10 @@ void SetPlaneSignbits(cplane_s *out)
 			bits |= 1 << j;
 	}
 	out->signbits = bits;
+}
+
+// 007AFA80  com_math.cpp:3723
+void Rand_Init(int seed)
+{
+	holdrand = seed;
 }

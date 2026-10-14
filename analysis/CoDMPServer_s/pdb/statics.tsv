@@ -1,0 +1,1748 @@
+source	scope	name	va	type	kind
+		$S1	04FBC2C0	unsigned	
+		$S2	04FB4720	unsigned	
+		CINEMATIC_DEFAULT_FILENAME	009E6F54		
+		COLOR_MULTIPLIER_AT_FULLSQUASH	009E7B80	const float	
+		Cos_Inv2PI	009E2460	math::Vector4::Constant	
+		DEFAULT_Z_NEAR	009E783C	const float	
+		FRAMERATE_INV	009E7334	const float	
+		GRIDSIZE_INV	009E7338	const float	
+		MAX_DISTANCE_FROM_SPHERE	009E7B84	const float	
+		MAX_INSTANTFORCE_2_CLIENT_DIST	009E7B8C	const float	
+		MAX_SHAKEFORCE_2_CLIENT_DIST	009E7B88	const float	
+		MAX_SQUASH_AMOUNT	009E7B7C	const float	
+		MINIMUM_Z_NEAR	009E7840	const float	
+		MINIMUM_Z_NEAR_DEPTHHACK	009E7838	const float	
+		OUTDOOR_TRACE_MARGIN	009E18E4	const float	
+		RB_RenderCommandTable	009E6E68		
+		SEETHRU_DECAL_EPSISON	009E7AD4	const float	
+		Sin_3PiOver2	00AC1760	math::Vector4::Constant	
+		TRACKINST_exposureSettings	04FAD634	MemTrackInst	
+		TRACKINST_s_backEndData	04F78DA1	MemTrackInst	
+		TRACKINST_scene	04F78DA0	MemTrackInst	
+		TensionBuffer	034E8908		
+		TensionUsage	034C8734		
+		__lzo_copyright	009E3510		
+		_bad_alloc_Message	00AC17B4	const char*	
+		_bad_alloc_Message	00AC17B0	const char*	
+		_bad_alloc_Message	00AC17AC	const char*	
+		_bad_alloc_Message	00AC17A8	const char*	
+		_bad_alloc_Message	00AC17A4	const char*	
+		_bad_alloc_Message	00AC17A0	const char*	
+		_bad_alloc_Message	00AC179C	const char*	
+		_bad_alloc_Message	00AC1798	const char*	
+		_bad_alloc_Message	00AC1794	const char*	
+		_bad_alloc_Message	00AC1580	const char*	
+		_bad_alloc_Message	00AC1790	const char*	
+		_bad_alloc_Message	00AC157C	const char*	
+		_bad_alloc_Message	00AC178C	const char*	
+		_bad_alloc_Message	00AC1578	const char*	
+		_bad_alloc_Message	00AC2488	const char*	
+		_bad_alloc_Message	00AC1788	const char*	
+		_bad_alloc_Message	00AC2484	const char*	
+		_bad_alloc_Message	00AC1784	const char*	
+		_bad_alloc_Message	00AC2438	const char*	
+		_bad_alloc_Message	00AC1780	const char*	
+		_bad_alloc_Message	00AC2434	const char*	
+		_bad_alloc_Message	00AC177C	const char*	
+		_bad_alloc_Message	00AC2430	const char*	
+		_bad_alloc_Message	00AC1778	const char*	
+		_bad_alloc_Message	00AC242C	const char*	
+		_bad_alloc_Message	00AC1774	const char*	
+		_bad_alloc_Message	00AC2428	const char*	
+		_bad_alloc_Message	00AC2424	const char*	
+		_bad_alloc_Message	00AC1770	const char*	
+		_bad_alloc_Message	00AC2304	const char*	
+		_bad_alloc_Message	00AC175C	const char*	
+		_bad_alloc_Message	00AC2300	const char*	
+		_bad_alloc_Message	00AC1758	const char*	
+		_bad_alloc_Message	00AC22FC	const char*	
+		_bad_alloc_Message	00AC1754	const char*	
+		_bad_alloc_Message	00AC22F8	const char*	
+		_bad_alloc_Message	00AC1750	const char*	
+		_bad_alloc_Message	00AC22E4	const char*	
+		_bad_alloc_Message	00AC174C	const char*	
+		_bad_alloc_Message	00AC22E0	const char*	
+		_bad_alloc_Message	00AC1748	const char*	
+		_bad_alloc_Message	00AC22DC	const char*	
+		_bad_alloc_Message	00AC1744	const char*	
+		_bad_alloc_Message	00AC22D8	const char*	
+		_bad_alloc_Message	00AC16EC	const char*	
+		_bad_alloc_Message	00AC22D0	const char*	
+		_bad_alloc_Message	00AC16E8	const char*	
+		_bad_alloc_Message	00AC22CC	const char*	
+		_bad_alloc_Message	00AC16E4	const char*	
+		_bad_alloc_Message	00AC2084	const char*	
+		_bad_alloc_Message	00AC16E0	const char*	
+		_bad_alloc_Message	00AC2080	const char*	
+		_bad_alloc_Message	00AC16DC	const char*	
+		_bad_alloc_Message	00AC207C	const char*	
+		_bad_alloc_Message	00AC16D8	const char*	
+		_bad_alloc_Message	00AC2078	const char*	
+		_bad_alloc_Message	00AC16D4	const char*	
+		_bad_alloc_Message	00AC2044	const char*	
+		_bad_alloc_Message	00AC16D0	const char*	
+		_bad_alloc_Message	00AC2040	const char*	
+		_bad_alloc_Message	00AC16CC	const char*	
+		_bad_alloc_Message	00AC1FA8	const char*	
+		_bad_alloc_Message	00AC16C8	const char*	
+		_bad_alloc_Message	00AC1E3C	const char*	
+		_bad_alloc_Message	00AC16C4	const char*	
+		_bad_alloc_Message	00AC1E38	const char*	
+		_bad_alloc_Message	00AC16C0	const char*	
+		_bad_alloc_Message	00AC1E34	const char*	
+		_bad_alloc_Message	00AC16BC	const char*	
+		_bad_alloc_Message	00AC16B8	const char*	
+		_bad_alloc_Message	00AC1E30	const char*	
+		_bad_alloc_Message	00AC16B4	const char*	
+		_bad_alloc_Message	00AC1E2C	const char*	
+		_bad_alloc_Message	00AC16B0	const char*	
+		_bad_alloc_Message	00AC1E28	const char*	
+		_bad_alloc_Message	00AC16AC	const char*	
+		_bad_alloc_Message	00AC1E24	const char*	
+		_bad_alloc_Message	00AC16A8	const char*	
+		_bad_alloc_Message	00AC1E20	const char*	
+		_bad_alloc_Message	00AC16A4	const char*	
+		_bad_alloc_Message	00AC1E18	const char*	
+		_bad_alloc_Message	00AC169C	const char*	
+		_bad_alloc_Message	00AC1DF0	const char*	
+		_bad_alloc_Message	00AC1698	const char*	
+		_bad_alloc_Message	00AC1DEC	const char*	
+		_bad_alloc_Message	00AC164C	const char*	
+		_bad_alloc_Message	00AC1DE8	const char*	
+		_bad_alloc_Message	00AC1648	const char*	
+		_bad_alloc_Message	00AC1DE4	const char*	
+		_bad_alloc_Message	00AC1644	const char*	
+		_bad_alloc_Message	00AC1D3C	const char*	
+		_bad_alloc_Message	00AC1640	const char*	
+		_bad_alloc_Message	00AC1D38	const char*	
+		_bad_alloc_Message	00AC163C	const char*	
+		_bad_alloc_Message	00AC1D34	const char*	
+		_bad_alloc_Message	00AC1638	const char*	
+		_bad_alloc_Message	00AC1C94	const char*	
+		_bad_alloc_Message	00AC1C34	const char*	
+		_bad_alloc_Message	00AC1B6C	const char*	
+		_bad_alloc_Message	00AC1B68	const char*	
+		_bad_alloc_Message	00AC1B64	const char*	
+		_bad_alloc_Message	00AC1B60	const char*	
+		_bad_alloc_Message	00AC1AFC	const char*	
+		_bad_alloc_Message	00AC1888	const char*	
+		_bad_alloc_Message	00AC1634	const char*	
+		_bad_alloc_Message	00AC1884	const char*	
+		_bad_alloc_Message	00AC1630	const char*	
+		_bad_alloc_Message	00AC1880	const char*	
+		_bad_alloc_Message	00AC162C	const char*	
+		_bad_alloc_Message	00AC187C	const char*	
+		_bad_alloc_Message	00AC1628	const char*	
+		_bad_alloc_Message	00AC1878	const char*	
+		_bad_alloc_Message	00AC1594	const char*	
+		_bad_alloc_Message	00AC1874	const char*	
+		_bad_alloc_Message	00AC1590	const char*	
+		_bad_alloc_Message	00AC1870	const char*	
+		_bad_alloc_Message	00AC158C	const char*	
+		_bad_alloc_Message	00AC17BC	const char*	
+		_bad_alloc_Message	00AC1588	const char*	
+		_bad_alloc_Message	00AC17B8	const char*	
+		_bad_alloc_Message	00AC1584	const char*	
+		backendWind	0285DD80	WindState	
+		base_dither_matrix	009D4830		
+		buffersAllocated	03547684	bool	
+		c_fadeRate	009E2444	const float	
+		callbackParams	03020DC0	<unnamed-type-callbackParams>	
+		cinematicGlob	02D955D0	CinematicGlob	
+		clipSizeNames	00AC2314		
+		codecNames	00AC2308		
+		colorMapNames	00AC2380		
+		config	02D3F180	waterconfig_t	
+		constructorTable	009E6B38		
+		cubeShotGlob	03020ED0	<unnamed-type-cubeShotGlob>	
+		cubemapShotAxis	009E6A10		
+		data	04F97580	waterdata_t	
+		data$initializer$	0099B888	void ()*	
+		debugGlobals	034AC4F0	DebugGlobals	
+		debugPoints	04F974B8	fifo_t<debugpoint_t,16>	
+		debugShaderNames	00AC23DC		
+		decodeWeights	009E37CC		
+		drawGrassForceBox	03547664	int	
+		expiredMeshes	04F954B0	fifo_t<meshExpire_t,1024>	
+		exponenttable	03020F18		
+		extend_offset	009D4970		
+		extend_offset	009D4730		
+		extend_test	009D4930		
+		extend_test	009D46F0		
+		extra_pool_slop	009D51CC		
+		fbColorDebugNames	00AC23B8		
+		first_pool_slop	009D51C4		
+		freeVertBlocks	02D39808		
+		frontendWind	0285DB00	WindState	
+		g_allowShadowMaps	00AC0F35	bool	
+		g_cinematicDS	02D39804	IDirectSound8*	
+		g_cinematicInitialized	03547698	bool	
+		g_clipSpacePoints	009E23EC		
+		g_customSamplerDest	00AC1C84		
+		g_debugExternLineVerts	034C8738		
+		g_debugLineVerts	034DDBD8		
+		g_debugPolyVerts	034D3188		
+		g_destroy_window	028519E4	int	
+		g_dpvsView	0501A00C	DpvsView*	tls
+		g_dynEntVisData	0501A020		tls
+		g_dynSModelClientView	02D2FC00		
+		g_extraCamConfig	03547D30	ExtraCamConfig	
+		g_foliageInfo$initializer$	0099B880	void ()*	
+		g_frameIndex	02A235A4	unsigned	
+		g_frontEndCmds	02A2356C		
+		g_ftDecalFadePower	00AC16A0	float	
+		g_generateOverrideTechniques	00AC0F36	bool	
+		g_heroLightCount	035476D4	unsigned	
+		g_heroLightTree	035476E0	GfxHeroLightTree*	
+		g_heroLightTreeCount	035476D8	unsigned	
+		g_heroLights	035476DC	GfxHeroLight*	
+		g_hr	0284F990	HRESULT	
+		g_identityMatrix44	009E3310		
+		g_imageProgNames	00AC1D40		
+		g_imageProgs	0345CB00		
+		g_initialized	035476B3	bool	
+		g_materialTypeInfo	00AC1C38		
+		g_ropeInfo	02D38C00	RopeRenderInfo	
+		g_shadowFrustumBound	009E241C		
+		g_smodelVisData	0501A010	unsigned char*	tls
+		g_staticModelLightCallback	034A1DA4	StaticModelLightCallback	
+		g_surfaceVisData	0501A004	unsigned char*	tls
+		g_useTechnique	009E4548		
+		g_viewIndex	0501A014	unsigned	tls
+		g_viewInfo	04F78DB0		
+		g_viewInfo$initializer$	0099B884	void ()*	
+		g_worldLayerDataStride	00AC2048		
+		gpuSyncNames	00AC2370		
+		grassForceStrengthVehiclePos	00AC247C	float	
+		grassForceVehicleRad	00AC2478	float	
+		gridBasisDirs	034E8628		
+		h0	009EA658		
+		h1	009EA758		
+		hackSize	02FC0DBC	int	
+		imageGlobals	034230C0	<unnamed-type-imageGlobals>	
+		imageTypeName	00AC1DB4		
+		lightGlob	034BCDD0	LightGlobals	
+		lightGridMutex	00AF3318	tlAtomicMutex	
+		lightGridMutex$initializer$	0099B88C	void ()*	
+		lightPointCount	035476B8	unsigned	
+		lockPvsViewParms	0285DC30	GfxViewParms	
+		ltp_params_lbr	009EAA34	ltp_params	
+		ltp_params_med	009EAA54	ltp_params	
+		ltp_params_nb	009EAAFC	ltp_params	
+		ltp_params_vlbr	009EA584	ltp_params	
+		mantissatable	03021018		
+		materialGlobals	0284F998	<unnamed-type-materialGlobals>	
+		mem	0284365C	int	
+		mipFilterNames	00AC23C8		
+		modelLightGlob	034AC100	<unnamed-type-modelLightGlob>	
+		mtlLoadGlob	034250D8	<unnamed-type-mtlLoadGlob>	
+		nb_mode	009EACB0	SpeexNBMode	
+		nb_submode1	009EA998	SpeexSubmode	
+		nb_submode2	009EA9F0	SpeexSubmode	
+		nb_submode3	009EAA60	SpeexSubmode	
+		nb_submode4	009EAAB8	SpeexSubmode	
+		nb_submode5	009EAB30	SpeexSubmode	
+		nb_submode6	009EAB88	SpeexSubmode	
+		nb_submode7	009EAC00	SpeexSubmode	
+		nb_submode8	009EAC58	SpeexSubmode	
+		nextAvailable	035476C0	unsigned	
+		normalMapNames	00AC23AC		
+		numFreeVertBlocks	02D38BD4	unsigned	
+		offsettable	03020DD0		
+		outdoorGlob	034E88C8	OutdoorGlob	
+		outdoorMapSize	009E18D8		
+		persistentPolySet	034AC4D8	PolySet	
+		pixelCostGlob	034AC560	<unnamed-type-pixelCostGlob>	
+		prevCmd	02D3A830	WaterSimulationCmd	
+		r_cinematic_disabled	035476A0	int	
+		r_clearNames	00AC240C		
+		r_forceLodNames	00AC23F4		
+		r_heroLightAxis	02D38BEC	int	
+		r_reflectionProbeGenerateExit	02A23524	const dvar_s*	
+		r_reflectionProbeRegenerateAll	02A0E518	const dvar_s*	
+		r_warningRepeatDelay	02D963F4	const dvar_s*	
+		rb_tessTable	009E6E28		
+		rb_tessTableNames	00AC1E40		
+		registeredFont	02A23528		
+		registeredFontCount	0354767C	int	
+		rgl	02D7F8B8	r_globals_load_t	
+		s_DebugBrushesAndPatchesCallback	035476D0	void ()*	
+		s_aaAlphaNames	00AC233C		
+		s_addingDebugLines	035476B2	bool	
+		s_allocGlob	02D7FE68	StreamAllocGlob	
+		s_alphaTestBitNames	009E5D98		
+		s_aspectRatioNames	00AC2328		
+		s_backEndData	02A23600		
+		s_blendOpAlphaBitNames	009E5EA8		
+		s_blendOpRgbBitNames	009E5DC0		
+		s_blendOpTable	009E3134		
+		s_blendOpTable	009E3090		
+		s_blendOpTable	009E2FEC		
+		s_blendOpTable	009E2F48		
+		s_blendOpTable	009E2EA4		
+		s_blendOpTable	009E2E00		
+		s_blendOpTable	009E2D5C		
+		s_blendOpTable	009E2CB8		
+		s_blendOpTable	009E2B50		
+		s_blendOpTable	009D49EC		
+		s_blendOpTable	009E829C		
+		s_blendOpTable	009E7BCC		
+		s_blendOpTable	009E2724		
+		s_blendOpTable	009E7B14		
+		s_blendOpTable	009E2680		
+		s_blendOpTable	009E25DC		
+		s_blendOpTable	009E7A6C		
+		s_blendOpTable	009E2538		
+		s_blendOpTable	009E79C8		
+		s_blendOpTable	009E7924		
+		s_blendOpTable	009E7880		
+		s_blendOpTable	009E2448		
+		s_blendOpTable	009E2384		
+		s_blendOpTable	009E22E0		
+		s_blendOpTable	009E77D0		
+		s_blendOpTable	009E223C		
+		s_blendOpTable	009E772C		
+		s_blendOpTable	009E2198		
+		s_blendOpTable	009E7688		
+		s_blendOpTable	009E20F4		
+		s_blendOpTable	009E7594		
+		s_blendOpTable	009E2050		
+		s_blendOpTable	009E74F0		
+		s_blendOpTable	009E1FAC		
+		s_blendOpTable	009E744C		
+		s_blendOpTable	009E73A8		
+		s_blendOpTable	009E1F08		
+		s_blendOpTable	009E72CC		
+		s_blendOpTable	009E1E44		
+		s_blendOpTable	009E7228		
+		s_blendOpTable	009E1DA0		
+		s_blendOpTable	009E7184		
+		s_blendOpTable	009E1CFC		
+		s_blendOpTable	009E70E0		
+		s_blendOpTable	009E1C58		
+		s_blendOpTable	009E1BB4		
+		s_blendOpTable	009E703C		
+		s_blendOpTable	009E1B10		
+		s_blendOpTable	009E6F98		
+		s_blendOpTable	009E1A6C		
+		s_blendOpTable	009E6EEC		
+		s_blendOpTable	009E19C8		
+		s_blendOpTable	009E6D94		
+		s_blendOpTable	009E6CF0		
+		s_blendOpTable	009E1924		
+		s_blendOpTable	009E6C4C		
+		s_blendOpTable	009E6BA8		
+		s_blendOpTable	009E1870		
+		s_blendOpTable	009E69A8		
+		s_blendOpTable	009E179C		
+		s_blendOpTable	009E6904		
+		s_blendOpTable	009E16F8		
+		s_blendOpTable	009E6860		
+		s_blendOpTable	009E1654		
+		s_blendOpTable	009E67E8		
+		s_blendOpTable	009E6770		
+		s_blendOpTable	009E66F8		
+		s_blendOpTable	009D55B0		
+		s_blendOpTable	009E6678		
+		s_blendOpTable	009E38B8		
+		s_blendOpTable	009E3814		
+		s_blendOpTable	009E3764		
+		s_blendOpTable	009E36C0		
+		s_blendOpTable	009D4F04		
+		s_blendOpTable	009D4E60		
+		s_blendOpTable	009E34A8		
+		s_blendOpTable	009D4DBC		
+		s_blendOpTable	009E3404		
+		s_blendOpTable	009D4D18		
+		s_blendOpTable	009E3360		
+		s_blendOpTable	009D4C74		
+		s_blendOpTable	009E327C		
+		s_blendOpTable	009D4BD0		
+		s_blendOpTable	009E31D8		
+		s_blendTable	009E3108		
+		s_blendTable	009E3064		
+		s_blendTable	009E2FC0		
+		s_blendTable	009E2F1C		
+		s_blendTable	009E2E78		
+		s_blendTable	009E2DD4		
+		s_blendTable	009E2D30		
+		s_blendTable	009E2A4C		
+		s_blendTable	009E278C		
+		s_blendTable	009D49C0		
+		s_blendTable	009E7C34		
+		s_blendTable	009E7BA0		
+		s_blendTable	009E26F8		
+		s_blendTable	009E7AE8		
+		s_blendTable	009E2654		
+		s_blendTable	009E25B0		
+		s_blendTable	009E7A40		
+		s_blendTable	009E250C		
+		s_blendTable	009E799C		
+		s_blendTable	009E78F8		
+		s_blendTable	009E7854		
+		s_blendTable	009E2480		
+		s_blendTable	009E2358		
+		s_blendTable	009E22B4		
+		s_blendTable	009E77A4		
+		s_blendTable	009E2210		
+		s_blendTable	009E7700		
+		s_blendTable	009E216C		
+		s_blendTable	009E75FC		
+		s_blendTable	009E20C8		
+		s_blendTable	009E7568		
+		s_blendTable	009E2024		
+		s_blendTable	009E74C4		
+		s_blendTable	009E1F80		
+		s_blendTable	009E7420		
+		s_blendTable	009E737C		
+		s_blendTable	009E1EDC		
+		s_blendTable	009E72A0		
+		s_blendTable	009E1E18		
+		s_blendTable	009E71FC		
+		s_blendTable	009E1D74		
+		s_blendTable	009E7158		
+		s_blendTable	009E1CD0		
+		s_blendTable	009E70B4		
+		s_blendTable	009E1C2C		
+		s_blendTable	009E1B88		
+		s_blendTable	009E7010		
+		s_blendTable	009E1AE4		
+		s_blendTable	009E6F6C		
+		s_blendTable	009E1A40		
+		s_blendTable	009E6DFC		
+		s_blendTable	009E199C		
+		s_blendTable	009E6D68		
+		s_blendTable	009E6CC4		
+		s_blendTable	009E18F8		
+		s_blendTable	009E6C20		
+		s_blendTable	009E6B0C		
+		s_blendTable	009E1844		
+		s_blendTable	009E697C		
+		s_blendTable	009E1770		
+		s_blendTable	009E68D8		
+		s_blendTable	009E16CC		
+		s_blendTable	009E5B64		
+		s_blendTable	009E1628		
+		s_blendTable	009E4ABC		
+		s_blendTable	009E45F4		
+		s_blendTable	009E451C		
+		s_blendTable	009D5584		
+		s_blendTable	009E4444		
+		s_blendTable	009E388C		
+		s_blendTable	009E37E8		
+		s_blendTable	009E3738		
+		s_blendTable	009E3694		
+		s_blendTable	009D4ED8		
+		s_blendTable	009D4E34		
+		s_blendTable	009E347C		
+		s_blendTable	009D4D90		
+		s_blendTable	009E33D8		
+		s_blendTable	009D4CEC		
+		s_blendTable	009E32E4		
+		s_blendTable	009D4C48		
+		s_blendTable	009E3250		
+		s_blendTable	009D4A54		
+		s_blendTable	009E31AC		
+		s_builtInMaterials	009E7C60		
+		s_cache	0345D110	static_model_cache_t	
+		s_capsCheckBits	009E27B8		
+		s_capsCheckInt	009E2A78		
+		s_cmdList	02A2359C	GfxCmdArray*	
+		s_codeConsts	009E4CF0		
+		s_codeSamplerUpdateFreq	009E4470		
+		s_codeSamplers	009E4670		
+		s_colorCorrectionDataEntries	02A0E520		
+		s_colorWriteAlphaBitNames	009E6020		
+		s_colorWriteRgbBitNames	009E6008		
+		s_cullFaceBitNames	009E5F90		
+		s_cullTable	009E30F8		
+		s_cullTable	009E3054		
+		s_cullTable	009E2FB0		
+		s_cullTable	009E2F0C		
+		s_cullTable	009E2E68		
+		s_cullTable	009E2DC4		
+		s_cullTable	009E2D20		
+		s_cullTable	009E2CA8		
+		s_cullTable	009E2B40		
+		s_cullTable	009D49B0		
+		s_cullTable	009E828C		
+		s_cullTable	009E7B90		
+		s_cullTable	009E26E8		
+		s_cullTable	009E7AD8		
+		s_cullTable	009E2644		
+		s_cullTable	009E25A0		
+		s_cullTable	009E7A30		
+		s_cullTable	009E24FC		
+		s_cullTable	009E798C		
+		s_cullTable	009E78E8		
+		s_cullTable	009E7844		
+		s_cullTable	009E2470		
+		s_cullTable	009E2348		
+		s_cullTable	009E22A4		
+		s_cullTable	009E7794		
+		s_cullTable	009E2200		
+		s_cullTable	009E76F0		
+		s_cullTable	009E215C		
+		s_cullTable	009E7678		
+		s_cullTable	009E20B8		
+		s_cullTable	009E7558		
+		s_cullTable	009E2014		
+		s_cullTable	009E74B4		
+		s_cullTable	009E1F70		
+		s_cullTable	009E7410		
+		s_cullTable	009E736C		
+		s_cullTable	009E1ECC		
+		s_cullTable	009E7290		
+		s_cullTable	009E1E08		
+		s_cullTable	009E71EC		
+		s_cullTable	009E1D64		
+		s_cullTable	009E7148		
+		s_cullTable	009E1CC0		
+		s_cullTable	009E70A4		
+		s_cullTable	009E1C1C		
+		s_cullTable	009E1B78		
+		s_cullTable	009E7000		
+		s_cullTable	009E1AD4		
+		s_cullTable	009E6F5C		
+		s_cullTable	009E1A30		
+		s_cullTable	009E6EDC		
+		s_cullTable	009E198C		
+		s_cullTable	009E6D58		
+		s_cullTable	009E6CB4		
+		s_cullTable	009E18E8		
+		s_cullTable	009E6C10		
+		s_cullTable	009E6B98		
+		s_cullTable	009E1834		
+		s_cullTable	009E696C		
+		s_cullTable	009E1760		
+		s_cullTable	009E68C8		
+		s_cullTable	009E16BC		
+		s_cullTable	009E6850		
+		s_cullTable	009E1618		
+		s_cullTable	009E67D8		
+		s_cullTable	009E6760		
+		s_cullTable	009E66E8		
+		s_cullTable	009D5574		
+		s_cullTable	009E6668		
+		s_cullTable	009E387C		
+		s_cullTable	009E37D8		
+		s_cullTable	009E3728		
+		s_cullTable	009E3684		
+		s_cullTable	009D4EC8		
+		s_cullTable	009D4E24		
+		s_cullTable	009E346C		
+		s_cullTable	009D4D80		
+		s_cullTable	009E33C8		
+		s_cullTable	009D4CDC		
+		s_cullTable	009E3350		
+		s_cullTable	009D4C38		
+		s_cullTable	009E3240		
+		s_cullTable	009D4BC0		
+		s_cullTable	009E319C		
+		s_debugShaderConsts	009E7628		
+		s_defaultCodeConsts	009E5B90		
+		s_defaultCodeSamplers	009E48A0		
+		s_depthTestBitNames	009E5FB0		
+		s_depthTestTable	009E314C		
+		s_depthTestTable	009E30A8		
+		s_depthTestTable	009E3004		
+		s_depthTestTable	009E2F60		
+		s_depthTestTable	009E2EBC		
+		s_depthTestTable	009E2E18		
+		s_depthTestTable	009E2D74		
+		s_depthTestTable	009E2CD0		
+		s_depthTestTable	009E2B68		
+		s_depthTestTable	009D4A04		
+		s_depthTestTable	009E82B4		
+		s_depthTestTable	009E7BE4		
+		s_depthTestTable	009E273C		
+		s_depthTestTable	009E7B2C		
+		s_depthTestTable	009E2698		
+		s_depthTestTable	009E25F4		
+		s_depthTestTable	009E7A84		
+		s_depthTestTable	009E2550		
+		s_depthTestTable	009E79E0		
+		s_depthTestTable	009E793C		
+		s_depthTestTable	009E7898		
+		s_depthTestTable	009E24AC		
+		s_depthTestTable	009E239C		
+		s_depthTestTable	009E22F8		
+		s_depthTestTable	009E77E8		
+		s_depthTestTable	009E2254		
+		s_depthTestTable	009E7744		
+		s_depthTestTable	009E21B0		
+		s_depthTestTable	009E76A0		
+		s_depthTestTable	009E210C		
+		s_depthTestTable	009E75AC		
+		s_depthTestTable	009E2068		
+		s_depthTestTable	009E7508		
+		s_depthTestTable	009E1FC4		
+		s_depthTestTable	009E7464		
+		s_depthTestTable	009E73C0		
+		s_depthTestTable	009E1F20		
+		s_depthTestTable	009E72E4		
+		s_depthTestTable	009E1E5C		
+		s_depthTestTable	009E7240		
+		s_depthTestTable	009E1DB8		
+		s_depthTestTable	009E719C		
+		s_depthTestTable	009E1D14		
+		s_depthTestTable	009E70F8		
+		s_depthTestTable	009E1C70		
+		s_depthTestTable	009E1BCC		
+		s_depthTestTable	009E7054		
+		s_depthTestTable	009E1B28		
+		s_depthTestTable	009E6FB0		
+		s_depthTestTable	009E1A84		
+		s_depthTestTable	009E6F04		
+		s_depthTestTable	009E19E0		
+		s_depthTestTable	009E6DAC		
+		s_depthTestTable	009E6D08		
+		s_depthTestTable	009E193C		
+		s_depthTestTable	009E6C64		
+		s_depthTestTable	009E6BC0		
+		s_depthTestTable	009E1888		
+		s_depthTestTable	009E69C0		
+		s_depthTestTable	009E17B4		
+		s_depthTestTable	009E691C		
+		s_depthTestTable	009E1710		
+		s_depthTestTable	009E6878		
+		s_depthTestTable	009E166C		
+		s_depthTestTable	009E6800		
+		s_depthTestTable	009E6788		
+		s_depthTestTable	009E6710		
+		s_depthTestTable	009D55C8		
+		s_depthTestTable	009E6690		
+		s_depthTestTable	009E38D0		
+		s_depthTestTable	009E382C		
+		s_depthTestTable	009E377C		
+		s_depthTestTable	009E36D8		
+		s_depthTestTable	009D4F1C		
+		s_depthTestTable	009D4E78		
+		s_depthTestTable	009E34C0		
+		s_depthTestTable	009D4DD4		
+		s_depthTestTable	009E341C		
+		s_depthTestTable	009D4D30		
+		s_depthTestTable	009E3378		
+		s_depthTestTable	009D4C8C		
+		s_depthTestTable	009E3294		
+		s_depthTestTable	009D4BE8		
+		s_depthTestTable	009E31F0		
+		s_depthWriteBitNames	009E5FE0		
+		s_dstBlendAlphaBitNames	009E5F38		
+		s_dstBlendRgbBitNames	009E5E50		
+		s_forcedLoadEntities	02D3A884		
+		s_hunk_mark	035476C4	int	
+		s_imageLoadBuf	02D3F1D4	unsigned char*	
+		s_imageLoadBytesSize	00AC1E1C	unsigned	
+		s_imageLoadBytesUsed	02D3F17C	unsigned	
+		s_imageLoadLock	02D7FF74	FastCriticalSection	
+		s_jpegParams	02D7FB7C	<unnamed-type-s_jpegParams>	
+		s_lastDepthTest	035476B1	bool	
+		s_lastTime	00AF35A8	float	
+		s_lightConsts	009E4B38		
+		s_lightGridRowDelta	02D963FC	int	
+		s_lightGridSliceDelta	02D963F8	int	
+		s_lightSamplers	009E45CC		
+		s_lightmapSamplers	009E4620		
+		s_lodState	034BCED4		
+		s_lyrTechSetNames	009E3920		
+		s_mipFilterTable	009E2C78		
+		s_modelLightingSampleDelta	034AC000		
+		s_nearPlaneConsts	009E4CA0		
+		s_numColorCorrectionDataEntries	02A0E51C	int	
+		s_numForcedLoadEntities	03547694	int	
+		s_numStreamHintsActive	0354768C	int	
+		s_pendingRequests	02D7FC08		
+		s_permapMaterials	009E8030		
+		s_pixelCostColorCodeTable	009E1804		
+		s_polygonOffsetBitNames	009E6038		
+		s_preventMaterials	02D7FDE8		
+		s_read_cinfo	034A1DB8	jpeg_decompress_struct	
+		s_read_jerr	034A1D18	jpeg_error_mgr	
+		s_renderTargetNames	00AC17C0		
+		s_shadowHistory	02D3CCB8		
+		s_smpFrame	03547680	unsigned	
+		s_srcBlendAlphaBitNames	009E5EE0		
+		s_srcBlendRgbBitNames	009E5DF8		
+		s_stateMapDstAlphaTestBitGroup	009E6448		
+		s_stateMapDstBlendFuncAlphaBitGroup	009E64A8		
+		s_stateMapDstBlendFuncRgbBitGroup	009E6468		
+		s_stateMapDstColorWriteBitGroup	009E6548		
+		s_stateMapDstCullFaceBitGroup	009E64E8		
+		s_stateMapDstDepthTestBitGroup	009E6508		
+		s_stateMapDstDepthWriteBitGroup	009E6528		
+		s_stateMapDstPolygonOffsetBitGroup	009E6578		
+		s_stateMapDstStencilBitGroup	009E65B8		
+		s_stateMapDstWireframeBitGroup	009E6598		
+		s_stateMapSrcBitGroup	009E62D8		
+		s_stencilBitNames	009E6078		
+		s_stencilFuncBackBitNames	009E6290		
+		s_stencilFuncFrontBitNames	009E6170		
+		s_stencilFuncTable	009E317C		
+		s_stencilFuncTable	009E30D8		
+		s_stencilFuncTable	009E3034		
+		s_stencilFuncTable	009E2F90		
+		s_stencilFuncTable	009E2EEC		
+		s_stencilFuncTable	009E2E48		
+		s_stencilFuncTable	009E2DA4		
+		s_stencilFuncTable	009E2D00		
+		s_stencilFuncTable	009E2B98		
+		s_stencilFuncTable	009D4A34		
+		s_stencilFuncTable	009E82E4		
+		s_stencilFuncTable	009E7C14		
+		s_stencilFuncTable	009E276C		
+		s_stencilFuncTable	009E7B5C		
+		s_stencilFuncTable	009E26C8		
+		s_stencilFuncTable	009E2624		
+		s_stencilFuncTable	009E7AB4		
+		s_stencilFuncTable	009E2580		
+		s_stencilFuncTable	009E7A10		
+		s_stencilFuncTable	009E796C		
+		s_stencilFuncTable	009E78C8		
+		s_stencilFuncTable	009E24DC		
+		s_stencilFuncTable	009E23CC		
+		s_stencilFuncTable	009E2328		
+		s_stencilFuncTable	009E7818		
+		s_stencilFuncTable	009E2284		
+		s_stencilFuncTable	009E7774		
+		s_stencilFuncTable	009E21E0		
+		s_stencilFuncTable	009E76D0		
+		s_stencilFuncTable	009E213C		
+		s_stencilFuncTable	009E75DC		
+		s_stencilFuncTable	009E2098		
+		s_stencilFuncTable	009E7538		
+		s_stencilFuncTable	009E1FF4		
+		s_stencilFuncTable	009E7494		
+		s_stencilFuncTable	009E73F0		
+		s_stencilFuncTable	009E1F50		
+		s_stencilFuncTable	009E7314		
+		s_stencilFuncTable	009E1E8C		
+		s_stencilFuncTable	009E7270		
+		s_stencilFuncTable	009E1DE8		
+		s_stencilFuncTable	009E71CC		
+		s_stencilFuncTable	009E1D44		
+		s_stencilFuncTable	009E7128		
+		s_stencilFuncTable	009E1CA0		
+		s_stencilFuncTable	009E1BFC		
+		s_stencilFuncTable	009E7084		
+		s_stencilFuncTable	009E1B58		
+		s_stencilFuncTable	009E6FE0		
+		s_stencilFuncTable	009E1AB4		
+		s_stencilFuncTable	009E6F34		
+		s_stencilFuncTable	009E1A10		
+		s_stencilFuncTable	009E6DDC		
+		s_stencilFuncTable	009E6D38		
+		s_stencilFuncTable	009E196C		
+		s_stencilFuncTable	009E6C94		
+		s_stencilFuncTable	009E6BF0		
+		s_stencilFuncTable	009E18B8		
+		s_stencilFuncTable	009E69F0		
+		s_stencilFuncTable	009E17E4		
+		s_stencilFuncTable	009E694C		
+		s_stencilFuncTable	009E1740		
+		s_stencilFuncTable	009E68A8		
+		s_stencilFuncTable	009E169C		
+		s_stencilFuncTable	009E6830		
+		s_stencilFuncTable	009E67B8		
+		s_stencilFuncTable	009E6740		
+		s_stencilFuncTable	009D55F8		
+		s_stencilFuncTable	009E66C0		
+		s_stencilFuncTable	009E3900		
+		s_stencilFuncTable	009E385C		
+		s_stencilFuncTable	009E37AC		
+		s_stencilFuncTable	009E3708		
+		s_stencilFuncTable	009D4F4C		
+		s_stencilFuncTable	009D4EA8		
+		s_stencilFuncTable	009E34F0		
+		s_stencilFuncTable	009D4E04		
+		s_stencilFuncTable	009E344C		
+		s_stencilFuncTable	009D4D60		
+		s_stencilFuncTable	009E33A8		
+		s_stencilFuncTable	009D4CBC		
+		s_stencilFuncTable	009E32C4		
+		s_stencilFuncTable	009D4C18		
+		s_stencilFuncTable	009E3220		
+		s_stencilOpBackFailBitNames	009E6200		
+		s_stencilOpBackPassBitNames	009E61B8		
+		s_stencilOpBackZFailBitNames	009E6248		
+		s_stencilOpFrontFailBitNames	009E60E0		
+		s_stencilOpFrontPassBitNames	009E6098		
+		s_stencilOpFrontZFailBitNames	009E6128		
+		s_stencilOpTable	009E315C		
+		s_stencilOpTable	009E30B8		
+		s_stencilOpTable	009E3014		
+		s_stencilOpTable	009E2F70		
+		s_stencilOpTable	009E2ECC		
+		s_stencilOpTable	009E2E28		
+		s_stencilOpTable	009E2D84		
+		s_stencilOpTable	009E2CE0		
+		s_stencilOpTable	009E2B78		
+		s_stencilOpTable	009D4A14		
+		s_stencilOpTable	009E82C4		
+		s_stencilOpTable	009E7BF4		
+		s_stencilOpTable	009E274C		
+		s_stencilOpTable	009E7B3C		
+		s_stencilOpTable	009E26A8		
+		s_stencilOpTable	009E2604		
+		s_stencilOpTable	009E7A94		
+		s_stencilOpTable	009E2560		
+		s_stencilOpTable	009E79F0		
+		s_stencilOpTable	009E794C		
+		s_stencilOpTable	009E78A8		
+		s_stencilOpTable	009E24BC		
+		s_stencilOpTable	009E23AC		
+		s_stencilOpTable	009E2308		
+		s_stencilOpTable	009E77F8		
+		s_stencilOpTable	009E2264		
+		s_stencilOpTable	009E7754		
+		s_stencilOpTable	009E21C0		
+		s_stencilOpTable	009E76B0		
+		s_stencilOpTable	009E211C		
+		s_stencilOpTable	009E75BC		
+		s_stencilOpTable	009E2078		
+		s_stencilOpTable	009E7518		
+		s_stencilOpTable	009E1FD4		
+		s_stencilOpTable	009E7474		
+		s_stencilOpTable	009E73D0		
+		s_stencilOpTable	009E1F30		
+		s_stencilOpTable	009E72F4		
+		s_stencilOpTable	009E1E6C		
+		s_stencilOpTable	009E7250		
+		s_stencilOpTable	009E1DC8		
+		s_stencilOpTable	009E71AC		
+		s_stencilOpTable	009E1D24		
+		s_stencilOpTable	009E7108		
+		s_stencilOpTable	009E1C80		
+		s_stencilOpTable	009E1BDC		
+		s_stencilOpTable	009E7064		
+		s_stencilOpTable	009E1B38		
+		s_stencilOpTable	009E6FC0		
+		s_stencilOpTable	009E1A94		
+		s_stencilOpTable	009E6F14		
+		s_stencilOpTable	009E19F0		
+		s_stencilOpTable	009E6DBC		
+		s_stencilOpTable	009E6D18		
+		s_stencilOpTable	009E194C		
+		s_stencilOpTable	009E6C74		
+		s_stencilOpTable	009E6BD0		
+		s_stencilOpTable	009E1898		
+		s_stencilOpTable	009E69D0		
+		s_stencilOpTable	009E17C4		
+		s_stencilOpTable	009E692C		
+		s_stencilOpTable	009E1720		
+		s_stencilOpTable	009E6888		
+		s_stencilOpTable	009E167C		
+		s_stencilOpTable	009E6810		
+		s_stencilOpTable	009E6798		
+		s_stencilOpTable	009E6720		
+		s_stencilOpTable	009D55D8		
+		s_stencilOpTable	009E66A0		
+		s_stencilOpTable	009E38E0		
+		s_stencilOpTable	009E383C		
+		s_stencilOpTable	009E378C		
+		s_stencilOpTable	009E36E8		
+		s_stencilOpTable	009D4F2C		
+		s_stencilOpTable	009D4E88		
+		s_stencilOpTable	009E34D0		
+		s_stencilOpTable	009D4DE4		
+		s_stencilOpTable	009E342C		
+		s_stencilOpTable	009D4D40		
+		s_stencilOpTable	009E3388		
+		s_stencilOpTable	009D4C9C		
+		s_stencilOpTable	009E32A4		
+		s_stencilOpTable	009D4BF8		
+		s_stencilOpTable	009E3200		
+		s_streamDestInfo	009E8264		
+		s_streamHints	02D7FB88		
+		s_streamSourceInfo	009E8048		
+		s_sunConsts	009E4AE8		
+		s_viewPos	02D38BF0	float4	
+		s_viewportBehaviorForRenderTarget	009E2BC8		
+		s_warnCount	034A1C50		
+		s_warnFormat	00AC1B70		
+		s_wireframeBitNames	009E6060		
+		s_worldVertFormatForLayerCount	009E6658		
+		sb_uwb_mode	009EAFD0	SpeexSBMode	
+		sb_wb_mode	009EAEF8	SpeexSBMode	
+		sceneWaterMapSetups	034BC910		
+		sceneWaterMapSetupsCount	034A1D14	int	
+		sgCopyrightString	00AC1DF4		
+		shadowGlob	034BD35C	ShadowGlobals	
+		showPenetrationNames	00AC234C		
+		showPixelCostNames	00AC235C		
+		smodelLightGlob	034A1F80	GfxSmodelLightGlob	
+		specularRoughnessMapNames	00AC2394		
+		split_cb_high	009EAC9C	split_cb_params	
+		split_cb_high_lbr	009EAC44	split_cb_params	
+		split_cb_nb	009EAB08	split_cb_params	
+		split_cb_nb_lbr	009EAA40	split_cb_params	
+		split_cb_nb_med	009EAAA4	split_cb_params	
+		split_cb_nb_ulbr	009EAB74	split_cb_params	
+		split_cb_nb_vlbr	009EA9DC	split_cb_params	
+		split_cb_sb	009EAB1C	split_cb_params	
+		sse_encodeScale	009D4FA0	__m128	
+		sse_encodeShift	009D4F90	__m128	
+		sse_one	009D4F80	__m128	
+		sse_weightScale	009D4FB0	__m128	
+		standardFrustumSidePlanes	009E8320		
+		streamDisabledCount	03547690	volatile long	
+		streamIsInitialized	03547687	bool	
+		tessTable	00AC2278		
+		tessTable_0000	00AC2088		
+		tessTable_0001	00AC20BC		
+		tessTable_0010	00AC20E8		
+		tessTable_0011	00AC2114		
+		tessTable_0100	00AC2130		
+		tessTable_0101	00AC215C		
+		tessTable_0110	00AC2178		
+		tessTable_0111	00AC2194		
+		tessTable_1000	00AC21A8		
+		tessTable_1001	00AC21D4		
+		tessTable_1010	00AC21F0		
+		tessTable_1011	00AC220C		
+		tessTable_1100	00AC2220		
+		tessTable_1101	00AC223C		
+		tessTable_1110	00AC2250		
+		tessTable_1111	00AC2264		
+		vertexBuffersAllocated	03547685	bool	
+		waterGlob	03453B00	WaterGlob	
+		waterGlobStatic	03451F00	WaterGlobStatic	
+		waterSimInitialized	03547686	bool	
+		waterUpdateMutex	02D38BC8	void*	
+		water_rand_seed	00AC22C8	int	
+		waveletDecodeAlpha	009DD618		
+		waveletDecodeBlue	009D5618		
+		waveletDecodeRedGreen	009D9618		
+		wb_submode1	009EAD78	SpeexSubmode	
+		wb_submode2	009EADF0	SpeexSubmode	
+		wb_submode3	009EAE40	SpeexSubmode	
+		wb_submode4	009EAE88	SpeexSubmode	
+	DrawSunDirectionDebug	debugOrigin	04FADB34		
+	DrawSunDirectionDebug	lastShowDebug	04FADB40	bool	
+	DrawText2D	MY_ALTCOLOR_TWO	00A95398		
+	DrawText2D	MY_ALTCOLOR_TWO_CINEMATIC	00A95398		
+	DrawText2D	MY_OFFSETS	00A9539C		
+	DrawText2D	MY_OFFSETS_SCALE	00A953BC	const float	
+	DrawText2D	bFlashToggle	00AF4AB4	bool	
+	DrawText2D	flashTime	04FADB50	int	
+	DrawText2D	lastFlashTime	04FADB4C	int	
+	Image_GetCardMemoryAmountForMipLevel		00867820		
+	Image_GetCardMemoryAmountForMipLevel		0086780C		
+	Image_LoadFromData		0082B770		
+	Image_PicmipForSemantic		0082FB10		
+	Image_PicmipForSemantic		0082FAFC		
+	Image_SourceBytesPerSlice_PC		008679B0		
+	Image_SourceBytesPerSlice_PC		0086799C		
+	Image_Upload2D_CopyDataBlock_PC		00867A94		
+	Image_Upload2D_CopyDataBlock_PC		00867A84		
+	Material_AddShaderArgument		0083403C		
+	Material_CacheShaderDX	IW_PROJECT_GAMEDIR	04FB471C	const char*	
+	Material_FileIncludeFileAndLineNumber	unknown	00A98B90		
+	Material_FindCachedShaderDX	IW_PROJECT_GAMEDIR	04FBC2BC	const char*	
+	Material_GetLayeredStateBits		00837608		
+	Material_GetLayeredStateBits		00837600		
+	Material_GetStreamDestForSemantic		00835454		
+	Material_GetStreamDestForSemantic		00835438		
+	Material_NameForStreamDest		00832600		
+	RB_FindBestCoronaToSpawn	id	04FADB44	unsigned	
+	RB_GenericFilterFX		0085C8BC		
+	RB_GenericFilterFX		0085C8AC		
+	RB_GenericFilterFX		0085C89C		
+	RB_LookupColor	color_table	00A95350		
+	RB_Resource_Update_Internal		0082AA64		
+	RB_SwapBuffers	assets_released	04FADB54	bool	
+	R_AddAllSceneEntSurfacesCamera	lightingInfo	04FB73A8		
+	R_AddDebugBox	iEdgePairs	00A19600		
+	R_CalcCubeMapViewValues		007FE7B8		
+	R_DeriveCodeMatrix		0084F168		
+	R_DeriveCodeMatrix		0084F148		
+	R_DescribeFormat		00847C9C		
+	R_DescribeFormat		00847C7C		
+	R_FontGetRandomLetter	MYRANDOMCHARS	00A94280		
+	R_GetBspSpotLightSurfs	allowSurf	00AF4AB8		
+	R_GetTechType		0086CF70		
+	R_GetTechType		0086CF5C		
+	R_MarkFragments_WorldBrushes	allowSurf	00AF4A78		
+	R_OverrideImage		0084B8E8		
+	R_OverrideImage		0084B8D4		
+	R_PixelCost_GetAccumulationMaterial		0084C0E0		
+	R_RegisterDvars	names	00AF4A7C		
+	R_Rope_GenerateVerts_Internal	lightingInfo	04FB5B48	GfxLightingInfo	
+	R_Rope_GenerateVerts_Internal	templateIndices_high	00A94410		
+	R_Rope_GenerateVerts_Internal	templateIndices_low	00A94404		
+	R_SetParameterDefArray		00833A14		
+	R_SetParameterDefArray		008339FC		
+	R_SkinXSurfaceWeightSseBlock<1,Sse_SkinVertex_0>	_mask_u32	00A9D7F0		
+	R_SkinXSurfaceWeightSseBlock<1,Sse_SkinVertex_0>	_one	00A9D7E0	__m128	
+	R_SkinXSurfaceWeightSseBlock<3,Sse_SkinVertex_1>	_mask_u32	00A9D7F0		
+	R_SkinXSurfaceWeightSseBlock<3,Sse_SkinVertex_1>	_one	00A9D7E0	__m128	
+	R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>	_mask_u32	00A9D7F0		
+	R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>	_one	00A9D7E0	__m128	
+	R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>	_mask_u32	00A9D7F0		
+	R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>	_one	00A9D7E0	__m128	
+	R_StoreWindowSettings		007ECEDC		
+	R_StreamUpdate_ReadTextures	lastIdx	04FADB48	int	
+	R_UpdateFrameRate	frameCount	04FAEAB0	unsigned	
+	R_UpdateFrameRate	frameRate	04FAEAAC	float	
+	R_UpdateFrameRate	previous	04FAEAA8	int	
+	R_VerifyFieldNames	fields	00AF4A9C		
+	R_VisitPortals	color	00A8CCC4		
+	RemoveSunShadowTech		0086CB00		
+	RemoveSunShadowTech		0086CAE0		
+	Wavelet_DecompressLevel		0086EAC0		
+	jinit_color_converter		00878B18		
+	jinit_color_converter		00878B04		
+	jpeg_default_colorspace		0086F444		
+	jpeg_set_colorspace		0086F72C		
+	lzopro_lzo1x_decompress		00842ECC		
+	nb_decoder_ctl		007D6974		
+	nb_decoder_ctl		007D692C		
+	nb_encoder_ctl		007D659C		
+	nb_encoder_ctl		007D6520		
+	sb_decoder_ctl		007D30B0		
+	sb_decoder_ctl		007D3064		
+	sb_encoder_ctl		007D2C94		
+	sb_encoder_ctl		007D2C1C		
+	start_pass_fdctmgr	aanscalefactor	009D46B0		
+	start_pass_fdctmgr	aanscales	009D4630		
+	std_huff_tables	bits_ac_chrominance	009D54BC		
+	std_huff_tables	bits_ac_luminance	009D5400		
+	std_huff_tables	bits_dc_chrominance	009D53E0		
+	std_huff_tables	bits_dc_luminance	009D4F6C		
+	std_huff_tables	val_ac_chrominance	009D54D0		
+	std_huff_tables	val_ac_luminance	009D5418		
+	std_huff_tables	val_dc_chrominance	009D53F4		
+	std_huff_tables	val_dc_luminance	009D51D4		
+<external>/./xapobase.cpp		g_pAdpcmCoefficients1	009C9200		
+<external>/./xapobase.cpp		g_pAdpcmCoefficients2	009C9210		
+<external>/./xapobase.cpp	XAPOBaseWaveHlpNameSpace::GetPseudoChannelMask	ChannelMaskTable	00ABEF38		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/intrncvt.c		DoubleFormat	00ABE9B0	FpFormatDescriptor	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/intrncvt.c		FloatFormat	00ABE9C8	FpFormatDescriptor	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/strgtold.c	__strgtold12_l		00968524		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp		_bad_alloc_Message	00ABE8D0	const char*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/stdexcpt.cpp		_bad_alloc_Message	00ABDBF8	const char*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/throw.cpp	_CxxThrowException	ExceptionTemplate	009BFE3C	EHExceptionRecord	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/typinfo.cpp		_bad_alloc_Message	00ABD7E0	const char*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/typname.cpp		__type_info_root_node	00B002A0	__type_info_node	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/typname.cpp		_bad_alloc_Message	00ABE458	const char*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/misc/i386/eh3valid.c		lModifying	04FFF57C	long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/misc/i386/eh3valid.c		nValidPages	04FFF578	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/misc/i386/eh3valid.c		rgValidPages	04FFF580		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/string/i386/memcmp.c	memcmp		00963C8B		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/ceil.c		newcw	00ABE580	unsigned	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/floor.c		newcw	00ABE838	unsigned	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/87cdisp.asm		DblMax	009C57D0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/87cdisp.asm		DblMin	009C57D8	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/87cdisp.asm		IeeeAdjO	009C57E0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/87cdisp.asm		IeeeAdjU	009C57E8	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/87cdisp.asm		_infinity	009C57F0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/87cdisp.asm		_zero	009C57F8	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/87disp.asm		One	00ABE8B4	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/87disp.asm		XAMtoTagTab	00ABE8BC	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/87tran.asm		_half	00ABE872	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/87tran.asm		_log2max	00ABE85E	long double	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/87tran.asm		_smallarg	00ABE868	long double	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos.asm		_NAME_	00ABDCA0	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		ABSVALMASK	009C8180	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		ALPHA	009C81C8	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		EMIN	009C81A0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		HALFMASK	009C8100	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		HALFMASK2	009C8110	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		INF	009C81B8	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		MAX_ARG	009C81A8	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		MIN_ARG	009C81B0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		NEG_PI	009C80D0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		ONEMASK	009C8190	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		ONE_BY_2	009C8198	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		PI	009C80E0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		PI_BY_2	009C80C0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		SIGNMASK	009C80F0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		Shifter	009C69B0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		TMASK	009C8188	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		T_table	009C78C0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		Tbl_addr	009C69C0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		ZERO	009C81C0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		cv	009C8120	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_pentium4.asm		cv2	009C8140	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_sse2.c		ABSVALMASK	00AAF2D0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_sse2.c		HALFMASK	00AAF260		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_sse2.c		NEG_PI	00AAF240		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_sse2.c		ONEMASK	00AAF2E8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_sse2.c		ONE_BY_2	00AAF2F0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_sse2.c		PI	00AAF250		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_sse2.c		PI_BY_2	00AAF230		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_sse2.c		TMASK	00AAF2E0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_sse2.c		T_table	00AAEA30		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_sse2.c		Tbl_addr	00AADB30		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_sse2.c		cv	00AAF270		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/acos_sse2.c		cv2	00AAF290		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/adj_fdiv.asm		big_number	00ABEE24	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/adj_fdiv.asm		dispatch_table	00ABEE2E	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/adj_fdiv.asm		fdiv_risc_table	00ABEDD0	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/adj_fdiv.asm		fdiv_scale_1	00ABEDE0	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/adj_fdiv.asm		fdiv_scale_2	00ABEDE4	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/adj_fdiv.asm		fpcw	00ABEF2E	unsigned short	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/adj_fdiv.asm		fprem_risc_table	00ABEDEC	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/adj_fdiv.asm		fprem_scale	00ABEDFC	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/adj_fdiv.asm		half	00ABEE1C	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/adj_fdiv.asm		one	00ABEE14	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/adj_fdiv.asm		one_shl_63	00ABEDE8	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/adj_fdiv.asm		one_shl_64	00ABEE04	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/adj_fdiv.asm		one_shr_64	00ABEE0C	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/asin_sse2.c		ABSVALMASK	00AA6540		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/asin_sse2.c		HALFMASK	00AA6560		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/asin_sse2.c		HALFMASK2	00AA6570		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/asin_sse2.c		ONEMASK	00AA6550		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/asin_sse2.c		ONE_BY_2	00AA6558		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/asin_sse2.c		PI_BY_2	00AA6590		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/asin_sse2.c		SIGNMASK	00AA6580		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/asin_sse2.c		TMASK	00AA4E38		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/asin_sse2.c		T_table	00AA5D40		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/asin_sse2.c		Tbl_addr	00AA4E40		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/asin_sse2.c		cv	00AA4E20		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/asin_sse2.c		cv2	00AA4DE0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan2_sse2.c		ATAN_TBL	00AA9650		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan2_sse2.c		EXPMASK	00AAA200		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan2_sse2.c		INVEXPMASK	00AAA1F0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan2_sse2.c		POW55	00AAA1F8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan2_sse2.c		P_TBL	00AAA0D0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan2_sse2.c		P_TBL2	00AAA150		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan2_sse2.c		SELECT_B	00AAA190		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan2_sse2.c		SGNMASK	00AAA0C0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan2_sse2.c		SGN_TBL	00AAA110		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan2_sse2.c		a2	00AAA1D0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan2_sse2.c		b2	00AAA1E0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan2_sse2.c		pi2_table	00AAA090		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan2_sse2.c		pi4_table	00AAA0B0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan2_sse2.c		pi_table	00AAA0A0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan_sse2.c		BMASK1	00AA4DB0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan_sse2.c		BMASK2	00AA4DB8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan_sse2.c		ONEMASK	00AA4DA8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan_sse2.c		SGNMASK	00AA4DA0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan_sse2.c		a2	00AA4DC0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan_sse2.c		atan_tbl	00AA4370		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan_sse2.c		b2	00AA4DD0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/atan_sse2.c		pi_table	00AA4D90		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/ceil_pentium4.asm		_Bns	009BFC50	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/ceil_pentium4.asm		_NegZero	009BFC80	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/ceil_pentium4.asm		_One	009BFC40	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/ceil_pentium4.asm		_S	009BFC70	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/ceil_pentium4.asm		_Zero	009BFC60	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/common.asm		DblMax	009C1034	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/common.asm		DblMin	009C103C	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/common.asm		IeeeAdjO	009C1044	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/common.asm		IeeeAdjU	009C104C	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/common.asm		One	009C1020	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/common.asm		_infinity	009C1054	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/common.asm		_zero	009C105C	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos.asm		_NAME_	00ABDC80	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		ALL_ONES	009C60E0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		Ctable	009C5860	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		NEG_ZERO	009C60E8	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		ONE	009C60F0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		PI32INV	009C60A0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		P_1	009C60C0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		P_2	009C60B0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		P_3	009C60C8	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		SC_1	009C6060	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		SC_2	009C6070	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		SC_3	009C6080	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		SC_4	009C6090	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		SHIFTER	009C60A8	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		SIGN_MASK	009C6100	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		TWO_POW_55	009C60D0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_pentium4.asm		TWO_POW_M55	009C60D8	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_sse2.c		Ctable	00AA8DC0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_sse2.c		NEG_ZERO	00AA9638		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_sse2.c		ONE	00AA9630		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_sse2.c		PI32INV	00AA9620		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_sse2.c		P_1	00AA9610		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_sse2.c		P_2	00AA9600		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_sse2.c		P_3	00AA9618		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_sse2.c		SC_1	00AA95C0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_sse2.c		SC_2	00AA95D0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_sse2.c		SC_3	00AA95E0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_sse2.c		SC_4	00AA95F0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_sse2.c		SHIFTER	00AA9628		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cos_sse2.c		SIGN_MASK	00AA9640		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/cpu_disp.c		pinit	0099B8A0	int ()*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		Del_Thres	009C57C8	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		EMIN	009C5788	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		INF	009C57A0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		MAX_ARG	009C5790	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		MIN_ARG	009C5798	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		ONE_val	009C5780	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		Shifter	009C5310	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		Sm_Thres	009C57C0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		Tbl_addr	009C5380	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		XMAX	009C57B0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		XMIN	009C57B8	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		ZERO	009C57A8	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		bias	009C5300	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		cv	009C5330	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		emask	009C52E0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		mmask	009C52F0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		smask	009C52D0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_pentium4.asm		twom60	009C5320	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_sse2.c		INF	00AAF798		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_sse2.c		ONE_val	00AAF790		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_sse2.c		Shifter	00AAF330		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_sse2.c		Tbl_addr	00AAF390		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_sse2.c		XMAX	00AAF7A8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_sse2.c		XMIN	00AAF7B0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_sse2.c		ZERO	00AAF7A0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_sse2.c		bias	00AAF320		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_sse2.c		cv	00AAF340		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_sse2.c		emask	00AAF300		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/exp_sse2.c		mmask	00AAF310		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/floor_pentium4.asm		_Bns	009BFCE0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/floor_pentium4.asm		_NegOne	009BFCF0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/floor_pentium4.asm		_NegZero	009BFD00	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/floor_pentium4.asm		_One	009BFCD0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/floor_pentium4.asm		_S	009BFD10	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/fpctrl.c		over	00ABEDB0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/fpctrl.c		under	00ABEDBC		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/fpctrl.c	__set_fpsr_sse2	__DAZ_ENABLED	00ABEDC8	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/libm_error.c		BIG	009C0588		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/libm_error.c		INF	009C0578		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/libm_error.c		INF_32	009C05A8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/libm_error.c		NAN_32	009C05B0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/libm_error.c		ZERO	009C0598		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/libm_error.c		ZERO_32	009C05B8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/libm_error.c		_pmatherr_set	00B00410	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/libm_error.c		libm_largef	009C05C0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/libm_error.c		libm_small	009C05D0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/libm_error.c		libm_smallf	009C05C8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/libm_error.c	__libm_error_support		0096ACD8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log.asm		LOG_name	00ABDC40	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10.asm		LOG_name	00ABDC70	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_pentium4.asm		CB_Tbl	009C4EC0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_pentium4.asm		CC	009C49C0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_pentium4.asm		Infs	009C4A50	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_pentium4.asm		LOG10_2	009C49F0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_pentium4.asm		Magic	009C49D0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_pentium4.asm		NaN	009C4A60	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_pentium4.asm		One	009C4A20	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_pentium4.asm		T_Tbl	009C4AB0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_pentium4.asm		Two52	009C4A40	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_pentium4.asm		Zero	009C4A30	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_pentium4.asm		coeff	009C4A70	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_pentium4.asm		emask	009C49B0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_pentium4.asm		hi_mask	009C49E0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_pentium4.asm		place_L	009C4A00	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_sse2.c		CB_Tbl	00AA3F60		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_sse2.c		CC	00AA3A60		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_sse2.c		Infs	00AA3AF0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_sse2.c		LOG10_2	00AA3A90		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_sse2.c		Magic	00AA3A70		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_sse2.c		NaN	00AA3B00		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_sse2.c		One	00AA3AC0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_sse2.c		T_Tbl	00AA3B50		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_sse2.c		Two52	00AA3AE0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_sse2.c		Zero	00AA3AD0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_sse2.c		coeff	00AA3B10		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_sse2.c		emask	00AA3A50		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_sse2.c		hi_mask	00AA3A80		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log10_sse2.c		place_LR	00AA3AA0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_pentium4.asm		B_Tbl	009C0800	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_pentium4.asm		Infs	009C07B0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_pentium4.asm		LOG_2	009C0750	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_pentium4.asm		Magic	009C0730	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_pentium4.asm		NaN	009C07C0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_pentium4.asm		One	009C0780	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_pentium4.asm		T_Tbl	009C0C10	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_pentium4.asm		Two52	009C07A0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_pentium4.asm		Zero	009C0790	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_pentium4.asm		coeff	009C07D0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_pentium4.asm		emask	009C0720	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_pentium4.asm		hi_mask	009C0740	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_pentium4.asm		place_L	009C0760	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_sse2.c		B_Tbl	00AA6670		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_sse2.c		Infs	00AA6630		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_sse2.c		LOG_2	00AA65D0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_sse2.c		Magic	00AA65B0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_sse2.c		One	00AA6600		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_sse2.c		T_Tbl	00AA6A80		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_sse2.c		Two52	00AA6620		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_sse2.c		Zero	00AA6610		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_sse2.c		coeff	00AA6640		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_sse2.c		emask	00AA65A0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_sse2.c		hi_mask	00AA65C0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/log_sse2.c		place_LR	00AA65E0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/mathfcns.c		pinit	0099B8A8	int ()*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow.asm		POW_name	00ABDC68	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		ABSVALMASK	009C4920	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		EMIN	009C4998	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		HALFSIG	009C4958	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		INF	009C4970	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		LHN	009C4960	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		NEG_BIG	009C4988	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		NEG_INF	009C4978	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		NEG_ZERO	009C4980	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		ONEMASK	009C4910	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		POS_BIG	009C4990	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		QIND	009C49A0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		SIGMASK	009C4900	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		Shifter	009C48F0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		cev	009C4930	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		clv	009C40D0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		exp2_tbl	009C40F0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		log2_t1	009C1480	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		log2_t2	009C20A0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		log2_t3	009C30C0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		rcp_t1	009C1070	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		rcp_t2	009C1C90	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		rcp_t3	009C28B0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_pentium4.asm		sNaN	009C4968	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		ABSVALMASK	00AADAC0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		EMIN	00AADB28		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		HALFSIG	00AADAF8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		INF	00AADB10		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		LHN	00AADB00		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		NEG_INF	00AADB18		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		NEG_ZERO	00AADB20		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		ONEMASK	00AADAB0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		SIGMASK	00AADAA0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		Shifter	00AADA90		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		cev	00AADAD0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		clv	00AAD270		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		exp2_tbl	00AAD290		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		log2_t1	00AAA620		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		log2_t2	00AAB240		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		log2_t3	00AAC260		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		rcp_t1	00AAA210		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		rcp_t2	00AAAE30		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		rcp_t3	00AABA50		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/pow_sse2.c		sNaN	00AADB08		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin.asm		_NAME_	00ABDC90	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		ALL_ONES	009C6990	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		Ctable	009C6110	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		NEG_ZERO	009C6998	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		ONE	009C69A0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		PI32INV	009C6950	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		P_1	009C6970	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		P_2	009C6960	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		P_3	009C6978	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		SC_1	009C6910	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		SC_2	009C6920	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		SC_3	009C6930	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		SC_4	009C6940	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		SHIFTER	009C6958	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		TWO_POW_55	009C6980	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_pentium4.asm		TWO_POW_M55	009C6988	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_sse2.c		ALL_ONES	00AA8DB0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_sse2.c		Ctable	00AA8530		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_sse2.c		NEG_ZERO	00AA8DB8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_sse2.c		PI32INV	00AA8D90		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_sse2.c		P_1	00AA8D80		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_sse2.c		P_2	00AA8D70		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_sse2.c		P_3	00AA8D88		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_sse2.c		SC_1	00AA8D30		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_sse2.c		SC_2	00AA8D40		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_sse2.c		SC_3	00AA8D50		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_sse2.c		SC_4	00AA8D60		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_sse2.c		SHIFTER	00AA8D98		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_sse2.c		TWO_POW_55	00AA8DA0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sin_sse2.c		TWO_POW_M55	00AA8DA8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/sqrt.asm		_NAME_	00ABDC50	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan.asm		_NAME_	00AF4B10	unsigned char	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_pentium4.asm		Ctable	00AAF7C0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_pentium4.asm		INF	00AB0E50	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_pentium4.asm		MASK_35	00AB0E20	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_pentium4.asm		ONE	00AB0E18	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_pentium4.asm		PI32INV	00AB0DC0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_pentium4.asm		P_1	00AB0DE0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_pentium4.asm		P_2	00AB0DF0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_pentium4.asm		P_3	00AB0E00	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_pentium4.asm		QQ_2	00AB0E10	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_pentium4.asm		SHIFTER	00AB0DD0	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_pentium4.asm		TWO_POW_55	00AB0E38	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_pentium4.asm		TWO_POW_M53	00AB0E48	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_pentium4.asm		TWO_POW_M55	00AB0E40	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_pentium4.asm		sign_mask	00AB0E30	unsigned __int64	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_sse2.c		Ctable	00AA6E90		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_sse2.c		INF	00AA84F8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_sse2.c		MASK_35	00AA8500		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_sse2.c		ONE	00AA84F0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_sse2.c		PI32INV	00AA8490		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_sse2.c		P_1	00AA84B0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_sse2.c		P_2	00AA84C0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_sse2.c		P_3	00AA84D0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_sse2.c		QQ_2	00AA84E8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_sse2.c		SHIFTER	00AA84A0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_sse2.c		TWO_POW_55	00AA8510		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_sse2.c		TWO_POW_M53	00AA8520		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_sse2.c		TWO_POW_M55	00AA8518		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/tran/i386/tan_sse2.c		sign_mask	00AA84E0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/MEMCPY.ASM		LeadDownVec	00960D18	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/MEMCPY.ASM		LeadUpVec	00960B8C	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/MEMCPY.ASM		TrailDownVec	00960E10	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/MEMCPY.ASM		TrailUpVec	00960C74	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/MEMCPY.ASM		UnwindDownVec	00960DA4	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/MEMCPY.ASM		UnwindUpVec	00960C08	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memmove.asm		LeadDownVec	0095B578	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memmove.asm		LeadUpVec	0095B3EC	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memmove.asm		TrailDownVec	0095B670	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memmove.asm		TrailUpVec	0095B4D4	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memmove.asm		UnwindDownVec	0095B604	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memmove.asm		UnwindUpVec	0095B468	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_file.c		pinit	0099B89C	int ()*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_file.c		pterm	0099B8C8	void ()*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_open.c	_openfile	ccsField	009C05F8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_open.c	_openfile	unicodeencoding	009C0610		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_open.c	_openfile	utf16encoding	009C0604		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_open.c	_openfile	utf8encoding	009C05FC		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_cmp.c	__crtCompareStringA_stat	f_use	00B00994	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_env.c	__crtGetEnvironmentStringsA	f_use	00B00600	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_map.c	__crtLCMapStringA_stat	f_use	00AFFF7C	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_str.c	__crtGetStringTypeA_stat	f_use	00B0093C	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/asctime.c		buf	00AFFE88		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0msg.c		rterrs	00ABE3A0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0msg.c	_NMSG_WRITE	outmsg	00AFFF80		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtmbox.c	__crtMessageBoxA	pfnGetActiveWindow	00B00948	HWND__* ()*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtmbox.c	__crtMessageBoxA	pfnGetLastActivePopup	00B0094C	HWND__* (HWND__*)*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtmbox.c	__crtMessageBoxA	pfnGetProcessWindowStation	00B00950	HWINSTA__* ()*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtmbox.c	__crtMessageBoxA	pfnGetUserObjectInformation	00B00954	int (void*, int, void*, unsigned...	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtmbox.c	__crtMessageBoxA	pfnMessageBox	00B00944	int (HWND__*, const char*, const...	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/dosmap.c		DoserrorNoMem	00ABD974	unsigned long	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/dosmap.c		ErrnoNoMem	00ABD970	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/dosmap.c		errtable	00ABD808		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/expand.c	_is_LFH_enabled	bInitialized	00B0092C	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/expand.c	_is_LFH_enabled	pfnHeapQueryInformation	00B00930	int (void*, _HEAP_INFORMATION_CL...	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/gs_report.c		DebuggerWasPresent	00B00658	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/gs_report.c		GS_ContextRecord	00B00660	_CONTEXT	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/gs_report.c		GS_ExceptionPointers	009C0718	_EXCEPTION_POINTERS	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/gs_report.c		GS_ExceptionRecord	00B00608	_EXCEPTION_RECORD	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/initcon.c		pterm	0099B8C4	void ()*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/initcrit.c		__pfnInitCritSecAndSpinCount	00B004F4	int (_RTL_CRITICAL_SECTION*, uns...	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbctype.c		__rgcode_page_info	00ABE1A8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbctype.c		__rgctypeflag	00ABE1A4		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbctype.c		fSystemSet	00AFFF2C	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbctype.c		pinit	0099B8A4	int ()*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mlock.c		_locktable	00ABE460		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mlock.c		lclcritsects	00B002B0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/new.cpp		$S1	00AFFE80	unsigned	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/new.cpp		_bad_alloc_Message	00ABD800	const char*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/new.cpp	operator new	nomem	00AFFE74	std::bad_alloc	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/newaop.cpp		_bad_alloc_Message	00ABD7D8	const char*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/onexit.c		pinit	0099B898	int ()*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/output.c	_output_l		00967D95		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/outputs.c	_output_s_l		009740CA		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/printf.c		__enable_percent_n	00AFFE70	unsigned	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/putwch.c	_putwch_nolock	use_w	00ABEDCC	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/rand_s.c		g_pfnRtlGenRandom	00B004F0	int (void*, unsigned long)*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/rmtmp.c		pterm	0099B8C0	void ()*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setlocal.c		_ctype_loc_style	00ABE298	const short*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setlocal.c		_first_127char	009BFE60		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stdargv.c	_setargv	_pgmname	00B004F8		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/string.cpp		_bad_alloc_Message	00ABD7DC	const char*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/timeset.c		tzdst	00ABE720		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/timeset.c		tzstd	00ABE6E0		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tmpfile.c		tmpfile_buf	00AFFF04		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tmpfile.c		tmpnam_buf	00AFFEF4		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tmpfile.c		tmpnam_s_buf	00AFFF18		
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tzset.c		dstend	00ABE7EC	transitiondate	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tzset.c		dststart	00ABE7E0	transitiondate	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tzset.c		lastTZ	00B004D0	char*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tzset.c		tzapiused	00B004CC	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tzset.c		tzinfo	00B00420	_TIME_ZONE_INFORMATION	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tzset.c	__tzset	first_time	00B004D4	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wincrt0.c		pinit	0099B8AC	int ()*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winsig.c		ConsoleCtrlHandler_Installed	00B004EC	int	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winsig.c		abort_action	00B004E4	void (int)*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winsig.c		ctrlbreak_action	00B004E0	void (int)*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winsig.c		ctrlc_action	00B004DC	void (int)*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winsig.c		term_action	00B004E8	void (int)*	
+<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wsetenv.c	__crtwsetenv	f_use	00ABE584	int	
+<external>/dd/vctools/langapi/undname/undname.cxx		heap	00B00958	HeapManager	
+<external>/dd/vctools/langapi/undname/undname.cxx		nameTable	009C9018		
+<external>/dd/vctools/langapi/undname/undname.cxx		rttiTable	009C9004		
+<external>/dd/vctools/langapi/undname/undname.cxx		tokenTable	009C8FD8		
+<external>/jobqueue_all.cpp		JQ_Danger_Zone_End_Ticks	00AFD308	const unsigned __int64	
+<external>/jobqueue_all.cpp		JQ_Danger_Zone_End_Ticks$initializer$	0099B4EC	void ()*	
+<external>/jobqueue_all.cpp		JQ_Danger_Zone_Start_Ticks	00AFD4F0	const unsigned __int64	
+<external>/jobqueue_all.cpp		JQ_Danger_Zone_Start_Ticks$initializer$	0099B4E8	void ()*	
+<external>/jobqueue_all.cpp		JQ_Operating_Zone_Start_MS	00ABC5C0	const float	
+<external>/jobqueue_all.cpp		JQ_Safety_End_Buffer_MS	009A1E78	const float	
+<external>/jobqueue_all.cpp		JQ_Safety_Start_Buffer_MS	009A1E74	const float	
+<external>/jobqueue_all.cpp		JQ_System_Reserve_MS	009A1E70	const float	
+<external>/jobqueue_all.cpp		JQ_Ticks_Per_MS	009A1E6C	const float	
+<external>/jobqueue_all.cpp		_bad_alloc_Message	00ABC5B0	const char*	
+<external>/jobqueue_all.cpp		jqCaptureFrames	00ABC5BC	int	
+<external>/jobqueue_all.cpp		jqGlobalQueue$initializer$	0099B4DC	void ()*	
+<external>/jobqueue_all.cpp		jqHighPriorityQueue$initializer$	0099B4E0	void ()*	
+<external>/jobqueue_all.cpp		jqMainThreadWorker$initializer$	0099B4F0	void ()*	
+<external>/jobqueue_all.cpp		jqPool$initializer$	0099B4D8	void ()*	
+<external>/jobqueue_all.cpp		jqProfPipe	00ABC5B8	int	
+<external>/jobqueue_all.cpp		localQueue$initializer$	0099B4E4	void ()*	
+<external>/source/phys_assert.cpp		PHYS_IDENTITY_MATRIX	00AFD930	phys_mat44	
+<external>/source/phys_assert.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B524	void ()*	
+<external>/source/phys_assert.cpp		PHYS_PI_	009A2268	const float	
+<external>/source/phys_assert.cpp		PHYS_PI_OVER_2	00ABC9F4	const float	
+<external>/source/phys_assert.cpp		PHYS_PI_TIMES_2	00ABC9F0	const float	
+<external>/source/phys_assert.cpp		PHYS_X_VEC	00ABC9C0	phys_vec3	
+<external>/source/phys_assert.cpp		PHYS_Y_VEC	00ABC9D0	phys_vec3	
+<external>/source/phys_assert.cpp		PHYS_ZERO_VEC	00AFD920	phys_vec3	
+<external>/source/phys_assert.cpp		PHYS_Z_VEC	00ABC9E0	phys_vec3	
+<external>/source/phys_assert.cpp		_bad_alloc_Message	00ABC9B0	const char*	
+<external>/source/phys_broad_phase.cpp		PHYS_IDENTITY_MATRIX	00AFD690	phys_mat44	
+<external>/source/phys_broad_phase.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B500	void ()*	
+<external>/source/phys_broad_phase.cpp		PHYS_PI_	009A211C	const float	
+<external>/source/phys_broad_phase.cpp		PHYS_PI_OVER_2	00ABC714	const float	
+<external>/source/phys_broad_phase.cpp		PHYS_PI_TIMES_2	00ABC710	const float	
+<external>/source/phys_broad_phase.cpp		PHYS_X_VEC	00ABC6E0	phys_vec3	
+<external>/source/phys_broad_phase.cpp		PHYS_Y_VEC	00ABC6F0	phys_vec3	
+<external>/source/phys_broad_phase.cpp		PHYS_ZERO_VEC	00AFD680	phys_vec3	
+<external>/source/phys_broad_phase.cpp		PHYS_Z_VEC	00ABC700	phys_vec3	
+<external>/source/phys_broad_phase.cpp		_bad_alloc_Message	00ABC6D0	const char*	
+<external>/source/phys_broad_phase.cpp		break_here	00AFD664	bool	
+<external>/source/phys_broad_phase.cpp		g_prolog_task_mutex$initializer$	0099B504	void ()*	
+<external>/source/phys_collision.cpp		PHYS_IDENTITY_MATRIX	00AFDC10	phys_mat44	
+<external>/source/phys_collision.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B540	void ()*	
+<external>/source/phys_collision.cpp		PHYS_PI_	009A2420	const float	
+<external>/source/phys_collision.cpp		PHYS_PI_OVER_2	00ABCD24	const float	
+<external>/source/phys_collision.cpp		PHYS_PI_TIMES_2	00ABCD20	const float	
+<external>/source/phys_collision.cpp		PHYS_X_VEC	00ABCCF0	phys_vec3	
+<external>/source/phys_collision.cpp		PHYS_Y_VEC	00ABCD00	phys_vec3	
+<external>/source/phys_collision.cpp		PHYS_ZERO_VEC	00AFDC00	phys_vec3	
+<external>/source/phys_collision.cpp		PHYS_Z_VEC	00ABCD10	phys_vec3	
+<external>/source/phys_collision.cpp		_bad_alloc_Message	00ABCCE0	const char*	
+<external>/source/phys_collision_multithreaded.cpp		MIN_NERP_DELTA_T	009A23A4	const float	
+<external>/source/phys_collision_multithreaded.cpp		PHYS_IDENTITY_MATRIX	00AFDB10	phys_mat44	
+<external>/source/phys_collision_multithreaded.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B534	void ()*	
+<external>/source/phys_collision_multithreaded.cpp		PHYS_PI_	009A2398	const float	
+<external>/source/phys_collision_multithreaded.cpp		PHYS_PI_OVER_2	00ABCBF4	const float	
+<external>/source/phys_collision_multithreaded.cpp		PHYS_PI_TIMES_2	00ABCBF0	const float	
+<external>/source/phys_collision_multithreaded.cpp		PHYS_X_VEC	00ABCBC0	phys_vec3	
+<external>/source/phys_collision_multithreaded.cpp		PHYS_Y_VEC	00ABCBD0	phys_vec3	
+<external>/source/phys_collision_multithreaded.cpp		PHYS_ZERO_VEC	00AFDB00	phys_vec3	
+<external>/source/phys_collision_multithreaded.cpp		PHYS_Z_VEC	00ABCBE0	phys_vec3	
+<external>/source/phys_collision_multithreaded.cpp		VEL_BI_NERP	009A239C	const float	
+<external>/source/phys_collision_multithreaded.cpp		VEL_UNI_NERP	009A23A0	const float	
+<external>/source/phys_collision_multithreaded.cpp		_bad_alloc_Message	00ABCBB0	const char*	
+<external>/source/phys_constraint_solver_multithreaded.cpp		MIN_NERP_DELTA_T	009A23D8	const float	
+<external>/source/phys_constraint_solver_multithreaded.cpp		PHYS_IDENTITY_MATRIX	00AFDBC0	phys_mat44	
+<external>/source/phys_constraint_solver_multithreaded.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B53C	void ()*	
+<external>/source/phys_constraint_solver_multithreaded.cpp		PHYS_PI_	009A23CC	const float	
+<external>/source/phys_constraint_solver_multithreaded.cpp		PHYS_PI_OVER_2	00ABCCB4	const float	
+<external>/source/phys_constraint_solver_multithreaded.cpp		PHYS_PI_TIMES_2	00ABCCB0	const float	
+<external>/source/phys_constraint_solver_multithreaded.cpp		PHYS_X_VEC	00ABCC80	phys_vec3	
+<external>/source/phys_constraint_solver_multithreaded.cpp		PHYS_Y_VEC	00ABCC90	phys_vec3	
+<external>/source/phys_constraint_solver_multithreaded.cpp		PHYS_ZERO_VEC	00AFDBB0	phys_vec3	
+<external>/source/phys_constraint_solver_multithreaded.cpp		PHYS_Z_VEC	00ABCCA0	phys_vec3	
+<external>/source/phys_constraint_solver_multithreaded.cpp		VEL_BI_NERP	009A23D0	const float	
+<external>/source/phys_constraint_solver_multithreaded.cpp		VEL_UNI_NERP	009A23D4	const float	
+<external>/source/phys_constraint_solver_multithreaded.cpp		_bad_alloc_Message	00ABCC70	const char*	
+<external>/source/phys_contact_manifold.cpp		PHYS_IDENTITY_MATRIX	00AFD8D0	phys_mat44	
+<external>/source/phys_contact_manifold.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B520	void ()*	
+<external>/source/phys_contact_manifold.cpp		PHYS_PI_	009A223C	const float	
+<external>/source/phys_contact_manifold.cpp		PHYS_PI_OVER_2	00ABC9A4	const float	
+<external>/source/phys_contact_manifold.cpp		PHYS_PI_TIMES_2	00ABC9A0	const float	
+<external>/source/phys_contact_manifold.cpp		PHYS_X_VEC	00ABC970	phys_vec3	
+<external>/source/phys_contact_manifold.cpp		PHYS_Y_VEC	00ABC980	phys_vec3	
+<external>/source/phys_contact_manifold.cpp		PHYS_ZERO_VEC	00AFD8C0	phys_vec3	
+<external>/source/phys_contact_manifold.cpp		PHYS_Z_VEC	00ABC990	phys_vec3	
+<external>/source/phys_contact_manifold.cpp		_bad_alloc_Message	00ABC960	const char*	
+<external>/source/phys_gjk.cpp		BIT_COUNT	009A2098		
+<external>/source/phys_gjk.cpp		CONV_THRESH	00ABC6B8	const float	
+<external>/source/phys_gjk.cpp		GJK_MIN_SUPPORT_DIR_LENGTH	009A2094	const float	
+<external>/source/phys_gjk.cpp		PHYS_IDENTITY_MATRIX	00AFD620	phys_mat44	
+<external>/source/phys_gjk.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B4FC	void ()*	
+<external>/source/phys_gjk.cpp		PHYS_PI_	009A2090	const float	
+<external>/source/phys_gjk.cpp		PHYS_PI_OVER_2	00ABC6B4	const float	
+<external>/source/phys_gjk.cpp		PHYS_PI_TIMES_2	00ABC6B0	const float	
+<external>/source/phys_gjk.cpp		PHYS_X_VEC	00ABC680	phys_vec3	
+<external>/source/phys_gjk.cpp		PHYS_Y_VEC	00ABC690	phys_vec3	
+<external>/source/phys_gjk.cpp		PHYS_ZERO_VEC	00AFD610	phys_vec3	
+<external>/source/phys_gjk.cpp		PHYS_Z_VEC	00ABC6A0	phys_vec3	
+<external>/source/phys_gjk.cpp		SEP_CONV_THRESH	00ABC6BC	const float	
+<external>/source/phys_gjk.cpp		_bad_alloc_Message	00ABC670	const char*	
+<external>/source/phys_gjk.cpp	phys_gjk_info::gjk_ray_cast	MAX_CC_RESET_ITERS	00ABC6C0	int	
+<external>/source/phys_gjk_sep_dir.cpp		GJK_MIN_SUPPORT_DIR_LENGTH	009A22A4	const float	
+<external>/source/phys_gjk_sep_dir.cpp		PHYS_IDENTITY_MATRIX	00AFDAB0	phys_mat44	
+<external>/source/phys_gjk_sep_dir.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B530	void ()*	
+<external>/source/phys_gjk_sep_dir.cpp		PHYS_PI_	009A22A0	const float	
+<external>/source/phys_gjk_sep_dir.cpp		PHYS_PI_OVER_2	00ABCAE4	const float	
+<external>/source/phys_gjk_sep_dir.cpp		PHYS_PI_TIMES_2	00ABCAE0	const float	
+<external>/source/phys_gjk_sep_dir.cpp		PHYS_X_VEC	00ABCAB0	phys_vec3	
+<external>/source/phys_gjk_sep_dir.cpp		PHYS_Y_VEC	00ABCAC0	phys_vec3	
+<external>/source/phys_gjk_sep_dir.cpp		PHYS_ZERO_VEC	00AFDAA0	phys_vec3	
+<external>/source/phys_gjk_sep_dir.cpp		PHYS_Z_VEC	00ABCAD0	phys_vec3	
+<external>/source/phys_gjk_sep_dir.cpp		_bad_alloc_Message	00ABCAA0	const char*	
+<external>/source/phys_gjk_sep_dir.cpp		m_list_support_dir	00ABCAF0		
+<external>/source/phys_gjk_sep_dir.cpp		m_list_triangle	009A22A8		
+<external>/source/phys_mem_new.cpp		PHYS_IDENTITY_MATRIX	00AFD5D0	phys_mat44	
+<external>/source/phys_mem_new.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B4F8	void ()*	
+<external>/source/phys_mem_new.cpp		PHYS_PI_	009A208C	const float	
+<external>/source/phys_mem_new.cpp		PHYS_PI_OVER_2	00ABC664	const float	
+<external>/source/phys_mem_new.cpp		PHYS_PI_TIMES_2	00ABC660	const float	
+<external>/source/phys_mem_new.cpp		PHYS_X_VEC	00ABC630	phys_vec3	
+<external>/source/phys_mem_new.cpp		PHYS_Y_VEC	00ABC640	phys_vec3	
+<external>/source/phys_mem_new.cpp		PHYS_ZERO_VEC	00AFD5C0	phys_vec3	
+<external>/source/phys_mem_new.cpp		PHYS_Z_VEC	00ABC650	phys_vec3	
+<external>/source/phys_mem_new.cpp		_bad_alloc_Message	00ABC620	const char*	
+<external>/source/phys_task_manager.cpp		PHYS_IDENTITY_MATRIX	00AFD990	phys_mat44	
+<external>/source/phys_task_manager.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B528	void ()*	
+<external>/source/phys_task_manager.cpp		PHYS_PI_	009A2280	const float	
+<external>/source/phys_task_manager.cpp		PHYS_PI_OVER_2	00ABCA44	const float	
+<external>/source/phys_task_manager.cpp		PHYS_PI_TIMES_2	00ABCA40	const float	
+<external>/source/phys_task_manager.cpp		PHYS_X_VEC	00ABCA10	phys_vec3	
+<external>/source/phys_task_manager.cpp		PHYS_Y_VEC	00ABCA20	phys_vec3	
+<external>/source/phys_task_manager.cpp		PHYS_ZERO_VEC	00AFD980	phys_vec3	
+<external>/source/phys_task_manager.cpp		PHYS_Z_VEC	00ABCA30	phys_vec3	
+<external>/source/phys_task_manager.cpp		_bad_alloc_Message	00ABCA00	const char*	
+<external>/source/phys_transient_allocator.cpp		PHYS_IDENTITY_MATRIX	00AFD570	phys_mat44	
+<external>/source/phys_transient_allocator.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B4F4	void ()*	
+<external>/source/phys_transient_allocator.cpp		PHYS_PI_	009A2088	const float	
+<external>/source/phys_transient_allocator.cpp		PHYS_PI_OVER_2	00ABC614	const float	
+<external>/source/phys_transient_allocator.cpp		PHYS_PI_TIMES_2	00ABC610	const float	
+<external>/source/phys_transient_allocator.cpp		PHYS_X_VEC	00ABC5E0	phys_vec3	
+<external>/source/phys_transient_allocator.cpp		PHYS_Y_VEC	00ABC5F0	phys_vec3	
+<external>/source/phys_transient_allocator.cpp		PHYS_ZERO_VEC	00AFD560	phys_vec3	
+<external>/source/phys_transient_allocator.cpp		PHYS_Z_VEC	00ABC600	phys_vec3	
+<external>/source/phys_transient_allocator.cpp		_bad_alloc_Message	00ABC5D0	const char*	
+<external>/source/phys_util.cpp		PHYS_IDENTITY_MATRIX	00AFD7D0	phys_mat44	
+<external>/source/phys_util.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B514	void ()*	
+<external>/source/phys_util.cpp		PHYS_PI_	009A21F8	const float	
+<external>/source/phys_util.cpp		PHYS_PI_OVER_2	00ABC8B4	const float	
+<external>/source/phys_util.cpp		PHYS_PI_TIMES_2	00ABC8B0	const float	
+<external>/source/phys_util.cpp		PHYS_X_VEC	00ABC880	phys_vec3	
+<external>/source/phys_util.cpp		PHYS_Y_VEC	00ABC890	phys_vec3	
+<external>/source/phys_util.cpp		PHYS_ZERO_VEC	00AFD7C0	phys_vec3	
+<external>/source/phys_util.cpp		PHYS_Z_VEC	00ABC8A0	phys_vec3	
+<external>/source/phys_util.cpp		_bad_alloc_Message	00ABC870	const char*	
+<external>/source/physics_system.cpp		MIN_NERP_DELTA_T	009A2188	const float	
+<external>/source/physics_system.cpp		PHYS_IDENTITY_MATRIX	00AFD6E0	phys_mat44	
+<external>/source/physics_system.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B508	void ()*	
+<external>/source/physics_system.cpp		PHYS_PI_	009A217C	const float	
+<external>/source/physics_system.cpp		PHYS_PI_OVER_2	00ABC7B4	const float	
+<external>/source/physics_system.cpp		PHYS_PI_TIMES_2	00ABC7B0	const float	
+<external>/source/physics_system.cpp		PHYS_X_VEC	00ABC780	phys_vec3	
+<external>/source/physics_system.cpp		PHYS_Y_VEC	00ABC790	phys_vec3	
+<external>/source/physics_system.cpp		PHYS_ZERO_VEC	00AFD6D0	phys_vec3	
+<external>/source/physics_system.cpp		PHYS_Z_VEC	00ABC7A0	phys_vec3	
+<external>/source/physics_system.cpp		VEL_BI_NERP	009A2180	const float	
+<external>/source/physics_system.cpp		VEL_UNI_NERP	009A2184	const float	
+<external>/source/physics_system.cpp		_bad_alloc_Message	00ABC770	const char*	
+<external>/source/physics_system_internal.cpp		MIN_NERP_DELTA_T	009A2234	const float	
+<external>/source/physics_system_internal.cpp		PHYS_IDENTITY_MATRIX	00AFD880	phys_mat44	
+<external>/source/physics_system_internal.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B51C	void ()*	
+<external>/source/physics_system_internal.cpp		PHYS_PI_	009A2228	const float	
+<external>/source/physics_system_internal.cpp		PHYS_PI_OVER_2	00ABC954	const float	
+<external>/source/physics_system_internal.cpp		PHYS_PI_TIMES_2	00ABC950	const float	
+<external>/source/physics_system_internal.cpp		PHYS_X_VEC	00ABC920	phys_vec3	
+<external>/source/physics_system_internal.cpp		PHYS_Y_VEC	00ABC930	phys_vec3	
+<external>/source/physics_system_internal.cpp		PHYS_ZERO_VEC	00AFD870	phys_vec3	
+<external>/source/physics_system_internal.cpp		PHYS_Z_VEC	00ABC940	phys_vec3	
+<external>/source/physics_system_internal.cpp		VEL_BI_NERP	009A222C	const float	
+<external>/source/physics_system_internal.cpp		VEL_UNI_NERP	009A2230	const float	
+<external>/source/physics_system_internal.cpp		_bad_alloc_Message	00ABC910	const char*	
+<external>/source/rbc_def_contact.cpp		MIN_NERP_DELTA_T	009A23C8	const float	
+<external>/source/rbc_def_contact.cpp		PHYS_IDENTITY_MATRIX	00AFDB60	phys_mat44	
+<external>/source/rbc_def_contact.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B538	void ()*	
+<external>/source/rbc_def_contact.cpp		PHYS_PI_	009A23BC	const float	
+<external>/source/rbc_def_contact.cpp		PHYS_PI_OVER_2	00ABCC64	const float	
+<external>/source/rbc_def_contact.cpp		PHYS_PI_TIMES_2	00ABCC60	const float	
+<external>/source/rbc_def_contact.cpp		PHYS_X_VEC	00ABCC30	phys_vec3	
+<external>/source/rbc_def_contact.cpp		PHYS_Y_VEC	00ABCC40	phys_vec3	
+<external>/source/rbc_def_contact.cpp		PHYS_ZERO_VEC	00AFDB50	phys_vec3	
+<external>/source/rbc_def_contact.cpp		PHYS_Z_VEC	00ABCC50	phys_vec3	
+<external>/source/rbc_def_contact.cpp		VEL_BI_NERP	009A23C0	const float	
+<external>/source/rbc_def_contact.cpp		VEL_UNI_NERP	009A23C4	const float	
+<external>/source/rbc_def_contact.cpp		_bad_alloc_Message	00ABCC20	const char*	
+<external>/source/rbc_def_custom.cpp		MIN_NERP_DELTA_T	009A2470	const float	
+<external>/source/rbc_def_custom.cpp		PHYS_IDENTITY_MATRIX	00AFDC60	phys_mat44	
+<external>/source/rbc_def_custom.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B544	void ()*	
+<external>/source/rbc_def_custom.cpp		PHYS_PI_	009A2464	const float	
+<external>/source/rbc_def_custom.cpp		PHYS_PI_OVER_2	00ABCD74	const float	
+<external>/source/rbc_def_custom.cpp		PHYS_PI_TIMES_2	00ABCD70	const float	
+<external>/source/rbc_def_custom.cpp		PHYS_X_VEC	00ABCD40	phys_vec3	
+<external>/source/rbc_def_custom.cpp		PHYS_Y_VEC	00ABCD50	phys_vec3	
+<external>/source/rbc_def_custom.cpp		PHYS_ZERO_VEC	00AFDC50	phys_vec3	
+<external>/source/rbc_def_custom.cpp		PHYS_Z_VEC	00ABCD60	phys_vec3	
+<external>/source/rbc_def_custom.cpp		VEL_BI_NERP	009A2468	const float	
+<external>/source/rbc_def_custom.cpp		VEL_UNI_NERP	009A246C	const float	
+<external>/source/rbc_def_custom.cpp		_bad_alloc_Message	00ABCD30	const char*	
+<external>/source/rbc_def_custom.cpp	rigid_body_constraint_custom_path::setup_constraint	psa_spring_d	00ABCD80	float	
+<external>/source/rbc_def_custom.cpp	rigid_body_constraint_custom_path::setup_constraint	psa_spring_d	00ABCD78	float	
+<external>/source/rbc_def_custom.cpp	rigid_body_constraint_custom_path::setup_constraint	psa_spring_k	00ABCD84	float	
+<external>/source/rbc_def_custom.cpp	rigid_body_constraint_custom_path::setup_constraint	psa_spring_k	00ABCD7C	float	
+<external>/source/rbc_def_custom.cpp	rigid_body_constraint_custom_path::setup_constraint	psn_spring_d	00ABCD88	float	
+<external>/source/rbc_def_custom.cpp	rigid_body_constraint_custom_path::setup_constraint	psn_spring_k	00ABCD8C	float	
+<external>/source/rbc_def_generic.cpp		MIN_NERP_DELTA_T	009A21A0	const float	
+<external>/source/rbc_def_generic.cpp		PHYS_IDENTITY_MATRIX	00AFD730	phys_mat44	
+<external>/source/rbc_def_generic.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B50C	void ()*	
+<external>/source/rbc_def_generic.cpp		PHYS_PI_	009A2194	const float	
+<external>/source/rbc_def_generic.cpp		PHYS_PI_OVER_2	00ABC804	const float	
+<external>/source/rbc_def_generic.cpp		PHYS_PI_TIMES_2	00ABC800	const float	
+<external>/source/rbc_def_generic.cpp		PHYS_X_VEC	00ABC7D0	phys_vec3	
+<external>/source/rbc_def_generic.cpp		PHYS_Y_VEC	00ABC7E0	phys_vec3	
+<external>/source/rbc_def_generic.cpp		PHYS_ZERO_VEC	00AFD720	phys_vec3	
+<external>/source/rbc_def_generic.cpp		PHYS_Z_VEC	00ABC7F0	phys_vec3	
+<external>/source/rbc_def_generic.cpp		VEL_BI_NERP	009A2198	const float	
+<external>/source/rbc_def_generic.cpp		VEL_UNI_NERP	009A219C	const float	
+<external>/source/rbc_def_generic.cpp		_bad_alloc_Message	00ABC7C0	const char*	
+<external>/source/rbc_def_ragdoll.cpp		MIN_NERP_DELTA_T	009A2290	const float	
+<external>/source/rbc_def_ragdoll.cpp		PHYS_IDENTITY_MATRIX	00AFDA60	phys_mat44	
+<external>/source/rbc_def_ragdoll.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B52C	void ()*	
+<external>/source/rbc_def_ragdoll.cpp		PHYS_PI_	009A2284	const float	
+<external>/source/rbc_def_ragdoll.cpp		PHYS_PI_OVER_2	00ABCA94	const float	
+<external>/source/rbc_def_ragdoll.cpp		PHYS_PI_TIMES_2	00ABCA90	const float	
+<external>/source/rbc_def_ragdoll.cpp		PHYS_X_VEC	00ABCA60	phys_vec3	
+<external>/source/rbc_def_ragdoll.cpp		PHYS_Y_VEC	00ABCA70	phys_vec3	
+<external>/source/rbc_def_ragdoll.cpp		PHYS_ZERO_VEC	00AFDA50	phys_vec3	
+<external>/source/rbc_def_ragdoll.cpp		PHYS_Z_VEC	00ABCA80	phys_vec3	
+<external>/source/rbc_def_ragdoll.cpp		VEL_BI_NERP	009A2288	const float	
+<external>/source/rbc_def_ragdoll.cpp		VEL_UNI_NERP	009A228C	const float	
+<external>/source/rbc_def_ragdoll.cpp		_bad_alloc_Message	00ABCA50	const char*	
+<external>/source/rbc_def_vehicle.cpp		MIN_NERP_DELTA_T	009A21DC	const float	
+<external>/source/rbc_def_vehicle.cpp		PHYS_IDENTITY_MATRIX	00AFD780	phys_mat44	
+<external>/source/rbc_def_vehicle.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B510	void ()*	
+<external>/source/rbc_def_vehicle.cpp		PHYS_PI_	009A21D0	const float	
+<external>/source/rbc_def_vehicle.cpp		PHYS_PI_OVER_2	00ABC854	const float	
+<external>/source/rbc_def_vehicle.cpp		PHYS_PI_TIMES_2	00ABC850	const float	
+<external>/source/rbc_def_vehicle.cpp		PHYS_X_VEC	00ABC820	phys_vec3	
+<external>/source/rbc_def_vehicle.cpp		PHYS_Y_VEC	00ABC830	phys_vec3	
+<external>/source/rbc_def_vehicle.cpp		PHYS_ZERO_VEC	00AFD770	phys_vec3	
+<external>/source/rbc_def_vehicle.cpp		PHYS_Z_VEC	00ABC840	phys_vec3	
+<external>/source/rbc_def_vehicle.cpp		VEL_BI_NERP	009A21D4	const float	
+<external>/source/rbc_def_vehicle.cpp		VEL_UNI_NERP	009A21D8	const float	
+<external>/source/rbc_def_vehicle.cpp		_bad_alloc_Message	00ABC810	const char*	
+<external>/source/rbc_def_vehicle.cpp	rigid_body_constraint_wheel::epilog_vel_constraint	lr	00ABC85C	float	
+<external>/source/rbc_def_vehicle.cpp	rigid_body_constraint_wheel::epilog_vel_constraint	lr	00ABC858	float	
+<external>/source/rbc_def_vehicle.cpp	rigid_body_constraint_wheel::epilog_vel_constraint	velocity_clamp	00ABC860	float	
+<external>/source/rigid_body.cpp		MIN_NERP_DELTA_T	009A221C	const float	
+<external>/source/rigid_body.cpp		PHYS_IDENTITY_MATRIX	00AFD820	phys_mat44	
+<external>/source/rigid_body.cpp		PHYS_IDENTITY_MATRIX$initializer$	0099B518	void ()*	
+<external>/source/rigid_body.cpp		PHYS_PI_	009A2210	const float	
+<external>/source/rigid_body.cpp		PHYS_PI_OVER_2	00ABC904	const float	
+<external>/source/rigid_body.cpp		PHYS_PI_TIMES_2	00ABC900	const float	
+<external>/source/rigid_body.cpp		PHYS_X_VEC	00ABC8D0	phys_vec3	
+<external>/source/rigid_body.cpp		PHYS_Y_VEC	00ABC8E0	phys_vec3	
+<external>/source/rigid_body.cpp		PHYS_ZERO_VEC	00AFD810	phys_vec3	
+<external>/source/rigid_body.cpp		PHYS_Z_VEC	00ABC8F0	phys_vec3	
+<external>/source/rigid_body.cpp		VEL_BI_NERP	009A2214	const float	
+<external>/source/rigid_body.cpp		VEL_UNI_NERP	009A2218	const float	
+<external>/source/rigid_body.cpp		_bad_alloc_Message	00ABC8C0	const char*	
+<external>/source/tl_system.cpp		_bad_alloc_Message	00ABC5A8	const char*	
+<external>/source/tl_system.cpp		qpf	00AF5198	tlPcQPF	
+<external>/source/tl_system.cpp		qpf$initializer$	0099B4D4	void ()*	
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		009864A0		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		00986478		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		00986468		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		00986440		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		009863D8		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		00986378		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		00986350		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		00986310		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		00986300		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		009862D8		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		00986278		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		00986248		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		00986224		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		009861F4		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		00986114		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		00986008		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		00985F80		
+<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp	DXGetErrorDescriptionA		00985F40		

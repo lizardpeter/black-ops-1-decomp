@@ -8,7 +8,7 @@
 - Every defined function is exported under its decorated name, so tests find it by the ORIGINAL
   decorated name from the MAP: a wrong prototype simply isn't found.
 - Hybrid link: any symbol the reconstruction uses but does not define yet is resolved to the original
-  binary's address from the MAP. Functions become a `push <va>; ret` thunk into the original code,
+  binary's address from the MAP (and original statics, declared with T5_STATIC, from the PDB). Functions become a `push <va>; ret` thunk into the original code,
   data becomes an absolute symbol at the original address. So a function can be reconstructed and tested
   before anything it calls is. build/hybrid.tsv lists every such dependency.
 
@@ -22,7 +22,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / "build"
 TARGET_BUILD = "CoDMPServer"
-CFLAGS = ["--target=i686-pc-windows-msvc", "-O0", "-msse2", "-mfpmath=sse", "-fno-exceptions",
+CFLAGS = ["--target=i686-pc-windows-msvc", "-O0", "-msse2", "-mfpmath=sse", "-ffp-contract=off", "-fno-exceptions",
           "-fms-extensions", "-fno-stack-protector", "-ffreestanding", "-fno-builtin", "-Wall", "-Werror",
           "-Wno-unused-function", "-Wno-unused-variable", f"-I{ROOT / 'include'}",
           f"-isystem{ROOT / 'tools' / 'recon' / 'include'}"]
@@ -45,6 +45,13 @@ def original_symbols():
     for r in rows:
         syms.setdefault(r["name"], (int(r["va"], 16), "f" in r["flags"]))
     return syms
+
+
+def original_statics():
+    """'t5s@<source>@<scope>@<name>' -> va, for T5_STATIC declarations (tools/recon/include/t5_static.h)."""
+    with open(ROOT / "analysis" / TARGET_BUILD / "pdb" / "statics.tsv", newline="") as f:
+        rows = list(csv.DictReader(f, delimiter="\t", quoting=csv.QUOTE_NONE))
+    return {f"t5s@{r['source']}@{r['scope']}@{r['name']}": int(r["va"], 16) for r in rows}
 
 
 def main():
@@ -80,6 +87,7 @@ def main():
     undefined = sorted({p[-1] for o in objs + env_objs for p in nm(o, "--undefined-only")} - defined)
 
     orig = original_symbols()
+    statics = original_statics()
     # Only functions that exist in the original are exported (and tested). Anything else defined in src/
     # is an inline helper from a header; flag it so new names do not slip in unnoticed.
     stray = [e for e in exports if e not in orig and e.lstrip("_") not in ("fltused",)]
@@ -87,13 +95,13 @@ def main():
     rows = [r for r in rows if r.split("\t")[0] in orig]
     if stray:
         print("note: defined in src/ but not in the original MAP (not exported):", ", ".join(stray))
-    missing = [u for u in undefined if u not in orig]
+    missing = [u for u in undefined if u not in orig and u not in statics]
     if missing:
         sys.exit("reconstruction uses symbols the original binary does not have:\n  " + "\n  ".join(missing))
     asm = ["\t.text"]
     hybrid = ["symbol\tkind\tva"]
     for u in undefined:
-        va, is_func = orig[u]
+        va, is_func = orig[u] if u in orig else (statics[u], False)
         q = '"' + u + '"'
         if is_func:
             asm += [f"\t.globl {q}", f"{q}:", f"\tpushl ${va:#x}", "\tretl"]
