@@ -38,6 +38,9 @@ Inputs come from hand-written `CASES` in `tests/differential/test_*.py` when a f
 input, and are otherwise generated from the original prototype (`auto.py` demangles the decorated name).
 They mix random values with edge cases (±0, NaN, ±inf, integer limits); seeds are fixed per function.
 
+Each call starts from Windows' thread FPU state (x87 control word 0x27F, MXCSR 0x1F80, all floating-point
+exceptions masked), as the original ran with.
+
 Every write a call makes into the original image (its globals) is journaled, compared between original
 and reconstruction, and rolled back, so calls never see each other's state. Inputs on which the original
 itself crashes are skipped; a function with too few usable inputs is reported untestable, never passed.

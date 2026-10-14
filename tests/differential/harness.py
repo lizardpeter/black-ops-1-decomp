@@ -15,7 +15,7 @@ from pathlib import Path
 import pefile
 from unicorn import UC_ARCH_X86, UC_HOOK_MEM_WRITE, UC_MODE_32, Uc, UcError
 from unicorn.x86_const import (UC_X86_REG_EAX, UC_X86_REG_EBP, UC_X86_REG_ESP, UC_X86_REG_FP0,
-                               UC_X86_REG_FPSW)
+                               UC_X86_REG_FPCW, UC_X86_REG_FPSW, UC_X86_REG_FPTAG, UC_X86_REG_MXCSR)
 
 ROOT = Path(__file__).resolve().parents[2]
 STACK, STACK_SIZE = 0x00100000, 0x00100000
@@ -120,7 +120,13 @@ class Machine:
         mu.mem_write(sp, struct.pack("<I", SENTINEL))
         mu.reg_write(UC_X86_REG_ESP, sp)
         mu.reg_write(UC_X86_REG_EBP, 0)
+        # FPU state as Windows starts a thread: x87 control word 0x27F (53-bit precision, round to
+        # nearest, all exceptions masked), empty x87 stack, MXCSR 0x1F80 (all SSE exceptions masked).
+        # Unmasked exceptions would send the CRT's floor() etc. into exception handling.
+        mu.reg_write(UC_X86_REG_FPCW, 0x27F)
         mu.reg_write(UC_X86_REG_FPSW, 0)
+        mu.reg_write(UC_X86_REG_FPTAG, 0xFFFF)
+        mu.reg_write(UC_X86_REG_MXCSR, 0x1F80)
         self._journal = {}
         try:
             mu.emu_start(va, SENTINEL, count=1_000_000)
