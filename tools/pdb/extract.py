@@ -175,7 +175,10 @@ def parse_locals(text, va_of):
         if reg == "EBX":
             cur["aligned"] = True
         if reg in ("EBP", "EBX") and off:
-            cur["vars"].append((reg, int(off.group(1)) - 4, m.group(2), ty.group(1) if ty else ""))
+            o = int(off.group(1))
+            if o >= 1 << 31:  # llvm-pdbutil prints some REGREL32 offsets as unsigned 32-bit
+                o -= 1 << 32
+            cur["vars"].append((reg, o - 4, m.group(2), ty.group(1) if ty else ""))
     rows = []
     for p in procs:
         seen = set()

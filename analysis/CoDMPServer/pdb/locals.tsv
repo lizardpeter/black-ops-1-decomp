@@ -61093,17 +61093,17 @@ va	kind	offset	name	type
 0081FAB0	local	-40	axis	
 0081FAB0	local	-44	returnVal	int
 0081FAB0	local	-180	state	BodyState
-0081FDE0	param	4294967116	gravity_dir	phys_vec3
-0081FDE0	param	4294967136	flags	int
-0081FDE0	param	4294967144	bpi	broad_phase_info*
-0081FDE0	param	4294967148	bpg	broad_phase_group*
-0081FDE0	param	4294967152	flags	int
-0081FDE0	param	4294967160	bpi	broad_phase_info*
-0081FDE0	param	4294967164	collision_visitor	create_gjk_geom_collision_visito...
-0081FDE0	param	4294967172	gjk_geom_list	gjk_geom_list_t
-0081FDE0	param	4294967180	vel	
-0081FDE0	param	4294967196	physPreset	PhysPreset
-0081FDE0	param	4294967288	this	NitrousVehicle* const
+0081FDE0	local	-8	this	NitrousVehicle* const
+0081FDE0	local	-100	physPreset	PhysPreset
+0081FDE0	local	-116	vel	
+0081FDE0	local	-124	gjk_geom_list	gjk_geom_list_t
+0081FDE0	local	-132	collision_visitor	create_gjk_geom_collision_visito...
+0081FDE0	local	-136	bpi	broad_phase_info*
+0081FDE0	local	-144	flags	int
+0081FDE0	local	-148	bpg	broad_phase_group*
+0081FDE0	local	-152	bpi	broad_phase_info*
+0081FDE0	local	-160	flags	int
+0081FDE0	local	-180	gravity_dir	phys_vec3
 00820320	local	-8	this	NitrousVehicleController* const
 00820380	param	4	shutdown	bool
 00820380	local	-32	this	NitrousVehicle* const
@@ -61223,34 +61223,34 @@ va	kind	offset	name	type
 00825A90	param	4	v	NitrousVehicle* const
 00825AE0	local	-8	i	phys_free_list<NitrousVehicle>::...
 00825AE0	local	-12	i_end	phys_free_list<NitrousVehicle>::...
-00825B30	param	4294965716	buffer	
-00825B30	param	4294966224	textPos	
-00825B30	param	4294966308	arm_col	
-00825B30	param	4294966324	_pos	
-00825B30	param	4294966336	_dir	
-00825B30	param	4294966348	dir	phys_vec3
-00825B30	param	4294966428	limit_pos	phys_vec3
-00825B30	param	4294966540	hit_pos_displaced	phys_vec3
-00825B30	param	4294966652	hit_pos	phys_vec3
-00825B30	param	4294966716	wheel_pos	phys_vec3
-00825B30	param	4294966760	radius	float
-00825B30	param	4294966764	b1	rigid_body*
-00825B30	param	4294966768	rbc_wheel	rigid_body_constraint_wheel*
-00825B30	param	4294966772	col	
-00825B30	param	4294966788	i	int
-00825B30	param	4294966792	alpha	float
-00825B30	param	4294966828	transform	phys_mat44
-00825B30	param	4294966892	com	phys_vec3
-00825B30	param	4294966956	dim	phys_vec3
-00825B30	param	4294966988	vmax	phys_vec3
-00825B30	param	4294967004	vmin	phys_vec3
-00825B30	param	4294967052	transform	phys_mat44
-00825B30	param	4294967132	com	phys_vec3
-00825B30	param	4294967196	dim	phys_vec3
-00825B30	param	4294967228	vmax	phys_vec3
-00825B30	param	4294967244	vmin	phys_vec3
-00825B30	param	4294967260	pos	phys_vec3
-00825B30	param	4294967284	this	NitrousVehicle* const
+00825B30	local	-12	this	NitrousVehicle* const
+00825B30	local	-36	pos	phys_vec3
+00825B30	local	-52	vmin	phys_vec3
+00825B30	local	-68	vmax	phys_vec3
+00825B30	local	-100	dim	phys_vec3
+00825B30	local	-164	com	phys_vec3
+00825B30	local	-244	transform	phys_mat44
+00825B30	local	-292	vmin	phys_vec3
+00825B30	local	-308	vmax	phys_vec3
+00825B30	local	-340	dim	phys_vec3
+00825B30	local	-404	com	phys_vec3
+00825B30	local	-468	transform	phys_mat44
+00825B30	local	-504	alpha	float
+00825B30	local	-508	i	int
+00825B30	local	-524	col	
+00825B30	local	-528	rbc_wheel	rigid_body_constraint_wheel*
+00825B30	local	-532	b1	rigid_body*
+00825B30	local	-536	radius	float
+00825B30	local	-580	wheel_pos	phys_vec3
+00825B30	local	-644	hit_pos	phys_vec3
+00825B30	local	-756	hit_pos_displaced	phys_vec3
+00825B30	local	-868	limit_pos	phys_vec3
+00825B30	local	-948	dir	phys_vec3
+00825B30	local	-960	_dir	
+00825B30	local	-972	_pos	
+00825B30	local	-988	arm_col	
+00825B30	local	-1072	textPos	
+00825B30	local	-1580	buffer	
 00826C30	param	8	d	const float
 00826C30	param	12	a	const phys_vec3&
 00826CA0	param	4	dest	phys_mat44&
@@ -61453,12 +61453,12 @@ va	kind	offset	name	type
 0082F8F0	param	8	a	const phys_vec3&
 0082F8F0	param	12	d	const float
 0082F8F0	local	-8	d_inv	const float
-0082F970	param	4294966724	buffer	
-0082F970	param	4294967232	textPos	
-0082F970	param	4294967244	pos	phys_vec3
-0082F970	param	4294967264	wheelSpeeds	
-0082F970	param	4294967280	i	int
-0082F970	param	4294967284	this	NitrousVehicle* const
+0082F970	local	-12	this	NitrousVehicle* const
+0082F970	local	-16	i	int
+0082F970	local	-32	wheelSpeeds	
+0082F970	local	-52	pos	phys_vec3
+0082F970	local	-64	textPos	
+0082F970	local	-572	buffer	
 0082FAC0	param	4	cent	const centity_s*
 0082FAC0	param	8	collision_visitor	gjk_physics_collision_visitor*
 0082FAC0	param	12	mask	const int
@@ -61472,10 +61472,10 @@ va	kind	offset	name	type
 00830010	local	-40	this	const tlAtomicReadWriteMutex* co...
 00830160	local	-12	CurThread	unsigned __int64
 00830160	local	-28	this	const tlAtomicReadWriteMutex* co...
-00830200	param	4294967164	dictator	phys_mat44
-00830200	param	4294967280	iter_next	auto_rigid_body*
-00830200	param	4294967284	prev_next	auto_rigid_body**
-00830200	param	4294967288	iter	auto_rigid_body*
+00830200	local	-8	iter	auto_rigid_body*
+00830200	local	-12	prev_next	auto_rigid_body**
+00830200	local	-16	iter_next	auto_rigid_body*
+00830200	local	-132	dictator	phys_mat44
 00830340	param	4	arb	auto_rigid_body*
 00830340	local	-8	wci_end	phys_free_list<rigid_body_constr...
 00830340	local	-12	wci	phys_free_list<rigid_body_constr...
@@ -61694,13 +61694,13 @@ va	kind	offset	name	type
 00834470	param	4	v	const phys_vec3&
 00834470	param	8	support_vert	phys_vec3*
 00834470	param	12	support_ind	phys_vec3*
-00834700	param	4294967260	dims	phys_vec3
-00834700	param	4294967288	this	const gjk_cylinder_t* const
+00834700	local	-8	this	const gjk_cylinder_t* const
+00834700	local	-36	dims	phys_vec3
 008347D0	param	4	cache_info	const cached_simplex_info&
 008347D0	param	8	index_count	const int
 008347D0	param	12	simplex_verts	phys_vec3*
 008347D0	param	16	simplex_inds	phys_vec3*
-00834910	param	4294967288	this	const gjk_cylinder_t* const
+00834910	local	-8	this	const gjk_cylinder_t* const
 00834980	param	4	cman	phys_contact_manifold*
 00835160	param	4	xform_	const phys_mat44&
 00835160	param	8	aabb_min	phys_vec3*
@@ -62131,40 +62131,40 @@ va	kind	offset	name	type
 0083EEB0	local	-20	cgameGlob	cg_s*
 0083EEB0	local	-32	body_pos	
 0083EEB0	local	-44	player_pos	
-0083F010	param	4294966860	cgameGlob	cg_s*
-0083F010	param	4294966864	localClientNum	int
-0083F010	param	4294966868	axis	
-0083F010	param	4294966904	stype_index	int
-0083F010	param	4294966908	localClientNum	int
-0083F010	param	4294966912	alias	unsigned
-0083F010	param	4294966916	type2	Phys_SurfaceType
-0083F010	param	4294966920	type1	Phys_SurfaceType
-0083F010	param	4294966924	origin	
-0083F010	param	4294966940	entnum	int
-0083F010	param	4294966944	bpi	const broad_phase_info*
-0083F010	param	4294966992	entnum	int
-0083F010	param	4294967016	userData2	PhysObjUserData*
-0083F010	param	4294967024	bpi	const broad_phase_info*
-0083F010	param	4294967039	collision_set	bool
-0083F010	param	4294967040	stype2	int
-0083F010	param	4294967044	stype1	int
-0083F010	param	4294967060	userData1	PhysObjUserData*
-0083F010	param	4294967068	hitn	phys_vec3
-0083F010	param	4294967084	hitp	phys_vec3
-0083F010	param	4294967140	intensity	const float
-0083F010	param	4294967148	rel_vel	phys_vec3
-0083F010	param	4294967180	rb2_point_velocity	phys_vec3
-0083F010	param	4294967212	rb1_point_velocity	phys_vec3
-0083F010	param	4294967240	cpi_i	const contact_point_info*
-0083F010	param	4294967244	list_cpi	const contact_point_info*
-0083F010	param	4294967252	max_intensity_cpi	const contact_point_info*
-0083F010	param	4294967256	max_intensity	float
-0083F010	param	4294967260	userData1	PhysObjUserData*
-0083F010	param	4294967268	rbc	rigid_body_constraint_contact*
-0083F010	param	4294967272	rbc_i_end	phys_free_list<rigid_body_constr...
-0083F010	param	4294967276	rbc_i	phys_free_list<rigid_body_constr...
-0083F010	param	4294967284	sfx_count	int
-0083F010	param	4294967288	pfx_count	int
+0083F010	local	-8	pfx_count	int
+0083F010	local	-12	sfx_count	int
+0083F010	local	-20	rbc_i	phys_free_list<rigid_body_constr...
+0083F010	local	-24	rbc_i_end	phys_free_list<rigid_body_constr...
+0083F010	local	-28	rbc	rigid_body_constraint_contact*
+0083F010	local	-36	userData1	PhysObjUserData*
+0083F010	local	-40	max_intensity	float
+0083F010	local	-44	max_intensity_cpi	const contact_point_info*
+0083F010	local	-52	list_cpi	const contact_point_info*
+0083F010	local	-56	cpi_i	const contact_point_info*
+0083F010	local	-84	rb1_point_velocity	phys_vec3
+0083F010	local	-116	rb2_point_velocity	phys_vec3
+0083F010	local	-148	rel_vel	phys_vec3
+0083F010	local	-156	intensity	const float
+0083F010	local	-212	hitp	phys_vec3
+0083F010	local	-228	hitn	phys_vec3
+0083F010	local	-236	userData1	PhysObjUserData*
+0083F010	local	-252	stype1	int
+0083F010	local	-256	stype2	int
+0083F010	local	-257	collision_set	bool
+0083F010	local	-272	bpi	const broad_phase_info*
+0083F010	local	-280	userData2	PhysObjUserData*
+0083F010	local	-304	entnum	int
+0083F010	local	-352	bpi	const broad_phase_info*
+0083F010	local	-356	entnum	int
+0083F010	local	-372	origin	
+0083F010	local	-376	type1	Phys_SurfaceType
+0083F010	local	-380	type2	Phys_SurfaceType
+0083F010	local	-384	alias	unsigned
+0083F010	local	-388	localClientNum	int
+0083F010	local	-392	stype_index	int
+0083F010	local	-428	axis	
+0083F010	local	-432	localClientNum	int
+0083F010	local	-436	cgameGlob	cg_s*
 0083FB70	local	-8	this	const rigid_body* const
 0083FBC0	param	4	stype	int
 0083FBD0	param	4	type1	Phys_SurfaceType
@@ -62585,11 +62585,11 @@ va	kind	offset	name	type
 0084C890	local	-12	i	int
 0084CA00	param	4	worldIndex	int
 0084CA00	param	8	userData	PhysObjUserData*
-0084CA30	param	4294967244	force	phys_vec3
-0084CA30	param	4294967260	pos	phys_vec3
-0084CA30	param	4294967276	body	rigid_body*
-0084CA30	param	4294967284	impulse	PhysImpulse&
-0084CA30	param	4294967288	i	int
+0084CA30	local	-8	i	int
+0084CA30	local	-12	impulse	PhysImpulse&
+0084CA30	local	-20	body	rigid_body*
+0084CA30	local	-36	pos	phys_vec3
+0084CA30	local	-52	force	phys_vec3
 0084CBC0	param	4	physObjId	int
 0084CBC0	param	8	hitPos	const float*
 0084CBC0	param	12	hitDir	const float*
@@ -62704,21 +62704,21 @@ va	kind	offset	name	type
 0084EF40	local	-8	vert_i_end	phys_static_array<phys_vec3,6144...
 0084EF40	local	-12	vert_i	phys_static_array<phys_vec3,6144...
 0084EF40	local	-348	this	phys_convex_hull* const
-0084F210	param	4294966924	temp	phys_vec3**
-0084F210	param	4294966928	i	int
-0084F210	param	4294966935	not_done	bool
-0084F210	param	4294967020	nn	phys_vec3
-0084F210	param	4294967128	best_verts	
-0084F210	param	4294967140	twice_area_sq	const float
-0084F210	param	4294967256	z2	phys_vec3**
-0084F210	param	4294967260	v2	int
-0084F210	param	4294967264	z1	phys_vec3**
-0084F210	param	4294967268	v1	int
-0084F210	param	4294967272	z0	phys_vec3**
-0084F210	param	4294967276	v0	int
-0084F210	param	4294967280	NUM_SPHERE_VERTS	const int
-0084F210	param	4294967284	largest_twice_area_sq	float
-0084F210	param	4294967288	this	phys_convex_hull* const
+0084F210	local	-8	this	phys_convex_hull* const
+0084F210	local	-12	largest_twice_area_sq	float
+0084F210	local	-16	NUM_SPHERE_VERTS	const int
+0084F210	local	-20	v0	int
+0084F210	local	-24	z0	phys_vec3**
+0084F210	local	-28	v1	int
+0084F210	local	-32	z1	phys_vec3**
+0084F210	local	-36	v2	int
+0084F210	local	-40	z2	phys_vec3**
+0084F210	local	-156	twice_area_sq	const float
+0084F210	local	-168	best_verts	
+0084F210	local	-276	nn	phys_vec3
+0084F210	local	-361	not_done	bool
+0084F210	local	-368	i	int
+0084F210	local	-372	temp	phys_vec3**
 0084F8B0	param	4	vert	const phys_vec3&
 0084F8B0	local	-8	volume	float
 0084F8B0	local	-12	tri_i_end	phys_static_array<phys_convex_hu...
@@ -62881,16 +62881,16 @@ va	kind	offset	name	type
 00852620	param	4	delta_t	float
 008528C0	param	4	userData	PhysObjUserData&
 008528C0	param	8	deltaT	float
-008528E0	param	4294967132	closest_point	phys_vec3
-008528E0	param	4294967196	player_origin_loc	phys_vec3
-008528E0	param	4294967224	geom	gjk_base_t*
-008528E0	param	4294967228	geom_mat	const phys_mat44&
-008528E0	param	4294967232	bpi_env	broad_phase_info*
-008528E0	param	4294967236	max_draw_dist_sq	const float
-008528E0	param	4294967244	player_origin	phys_vec3
-008528E0	param	4294967268	player_cent	centity_s*
-008528E0	param	4294967272	rbc_i_end	phys_free_list<rigid_body_constr...
-008528E0	param	4294967276	rbc_i	phys_free_list<rigid_body_constr...
+008528E0	local	-20	rbc_i	phys_free_list<rigid_body_constr...
+008528E0	local	-24	rbc_i_end	phys_free_list<rigid_body_constr...
+008528E0	local	-28	player_cent	centity_s*
+008528E0	local	-52	player_origin	phys_vec3
+008528E0	local	-60	max_draw_dist_sq	const float
+008528E0	local	-64	bpi_env	broad_phase_info*
+008528E0	local	-68	geom_mat	const phys_mat44&
+008528E0	local	-72	geom	gjk_base_t*
+008528E0	local	-100	player_origin_loc	phys_vec3
+008528E0	local	-164	closest_point	phys_vec3
 00852BD0	local	-8	i	int
 00852BD0	local	-12	this	cdl_proftimer* const
 00852C60	param	4	bpi1	const broad_phase_base*
@@ -82781,7 +82781,7 @@ va	kind	offset	name	type
 00A0FEF0	param	8	entry_to_add	phys_slot_pool*
 00A0FEF0	local	-260	entry_list	
 00A0FEF0	local	-516	collision_counts	
-00A10080	param	4294967276	first_slot	tagged_void_pointer_t
+00A10080	local	-20	first_slot	tagged_void_pointer_t
 00A10160	param	4	rb	user_rigid_body*
 00A10160	param	8	__formal	const float
 00A10210	param	4	dest	rigid_body*
@@ -82810,7 +82810,7 @@ va	kind	offset	name	type
 00A12360	param	4	T_i	phys_free_list<user_rigid_body>:...
 00A12410	param	4	T_i	phys_free_list<rigid_body>::T_in...
 00A124C0	param	4	m	phys_mat44&
-00A12540	param	4294967260	temp	phys_vec3
+00A12540	local	-36	temp	phys_vec3
 00A126A0	param	4	rb	user_rigid_body*
 00A126A0	param	8	delta_t	const float
 00A12840	param	4	rb	user_rigid_body*
@@ -82975,9 +82975,9 @@ va	kind	offset	name	type
 00A17AF0	param	8	target_mat	const phys_mat44&
 00A17BE0	param	4	delta_t	const float
 00A17C50	param	4	__formal	const float
-00A17CB0	param	4294967260	b2_up_axis	phys_vec3
-00A17CB0	param	4294967284	x	const float
-00A17CB0	param	4294967288	y	const float
+00A17CB0	local	-8	y	const float
+00A17CB0	local	-12	x	const float
+00A17CB0	local	-36	b2_up_axis	phys_vec3
 00A17DA0	param	8	lean_angle	const float
 00A17E40	param	4	b1_r_loc	const phys_vec3&
 00A17E40	param	8	b2_r_loc	const phys_vec3&
@@ -83190,18 +83190,18 @@ va	kind	offset	name	type
 00A1F440	param	4	T_i	phys_free_list<broad_phase_group...
 00A1F4E0	param	4	T_i	phys_free_list<broad_phase_colli...
 00A1F590	param	4	lambda	const float
-00A1F730	param	4294967116	p2	phys_vec3
-00A1F730	param	4294967132	half_dims	phys_vec3
-00A1F730	param	4294967152	rb_mat	const phys_mat44&
-00A1F730	param	4294967156	wheel_count	const int
-00A1F730	param	4294967164	aabb2_min	phys_vec3
-00A1F730	param	4294967180	aabb2_max	phys_vec3
-00A1F730	param	4294967196	p1	phys_vec3
-00A1F730	param	4294967212	aabb1_max	phys_vec3
-00A1F730	param	4294967228	aabb1_min	phys_vec3
-00A1F730	param	4294967284	i	int
+00A1F730	local	-12	i	int
+00A1F730	local	-68	aabb1_min	phys_vec3
+00A1F730	local	-84	aabb1_max	phys_vec3
+00A1F730	local	-100	p1	phys_vec3
+00A1F730	local	-116	aabb2_max	phys_vec3
+00A1F730	local	-132	aabb2_min	phys_vec3
+00A1F730	local	-140	wheel_count	const int
+00A1F730	local	-144	rb_mat	const phys_mat44&
+00A1F730	local	-164	half_dims	phys_vec3
+00A1F730	local	-180	p2	phys_vec3
 00A1FD40	local	-16	wheel_count	const int
-00A1FDF0	param	4294967260	aabb	
+00A1FDF0	local	-36	aabb	
 00A1FE80	param	4	max_num_active_pairs	const int
 00A1FF00	param	4	bpb	broad_phase_base*
 00A1FF00	param	8	info	broad_phase_base*
@@ -83236,14 +83236,14 @@ va	kind	offset	name	type
 00A206E0	param	4	list_ap	axis_aligned_sweep_and_prune::ac...
 00A206E0	param	8	node	axis_aligned_sweep_and_prune::sa...
 00A20770	param	4	bpb	broad_phase_base*
-00A20800	param	4294967288	hit_time	float
+00A20800	local	-8	hit_time	float
 00A20BC0	param	4	id1	unsigned
 00A20BC0	param	8	id2	unsigned
 00A20BC0	param	12	query_mutex	tlAtomicReadWriteMutex&
 00A20BC0	param	16	__formal	const bool
 00A20BC0	local	-12	key	phys_gjk_geom_id_pair_key
-00A20EF0	param	4294967280	ap_i	axis_aligned_sweep_and_prune::ac...
-00A20EF0	param	4294967288	hit_time	float
+00A20EF0	local	-8	hit_time	float
+00A20EF0	local	-16	ap_i	axis_aligned_sweep_and_prune::ac...
 00A21470	local	-24	ycur	axis_aligned_sweep_and_prune::ax...
 00A21470	local	-28	zcur	axis_aligned_sweep_and_prune::ax...
 00A21470	local	-32	xl_i_last	axis_aligned_sweep_and_prune::ax...
@@ -83286,14 +83286,14 @@ va	kind	offset	name	type
 00A222F0	local	-16	r_i	contact_manifold_mesh_point** co...
 00A222F0	local	-24	left_edge	phys_vec2
 00A222F0	local	-40	right_edge	phys_vec2
-00A22500	param	4294967228	edge	phys_vec3
-00A22500	param	4294967256	dot_p_fn	const float
-00A22500	param	4294967260	nedge_sq	const float
-00A22500	param	4294967264	nfeature_normal_sq	const float
-00A22500	param	4294967268	best_cos_sq	float
-00A22500	param	4294967280	nnormal_sq	const float
-00A22500	param	4294967284	last_mp_it	contact_manifold_mesh_point**
-00A22500	param	4294967288	dp	const float
+00A22500	local	-8	dp	const float
+00A22500	local	-12	last_mp_it	contact_manifold_mesh_point**
+00A22500	local	-16	nnormal_sq	const float
+00A22500	local	-28	best_cos_sq	float
+00A22500	local	-32	nfeature_normal_sq	const float
+00A22500	local	-36	nedge_sq	const float
+00A22500	local	-40	dot_p_fn	const float
+00A22500	local	-68	edge	phys_vec3
 00A22DA0	param	4	contact_mat	const phys_mat44&
 00A22FD0	local	-12	left_gb	phys_contact_manifold_process::i...
 00A22FD0	local	-16	right_gb	phys_contact_manifold_process::i...
@@ -83343,7 +83343,7 @@ va	kind	offset	name	type
 00A23FF0	param	24	theta_max	const float
 00A24130	param	4	b1_ud_loc	const phys_vec3&
 00A24130	param	8	theta_limit	const float
-00A24190	param	4294967260	dump	phys_vec3
+00A24190	local	-36	dump	phys_vec3
 00A242C0	param	4	psys	pulse_sum_constraint_solver*
 00A242C0	param	8	b1_ref	const phys_vec3&
 00A242C0	param	12	b2_axis	const phys_vec3&
@@ -83429,7 +83429,7 @@ va	kind	offset	name	type
 00A27E60	param	16	rbc	rigid_body_constraint*
 00A27F20	param	4	pBatch	jqBatch*
 00A27F20	local	-148	cs	pulse_sum_constraint_solver
-00A28000	param	4294967260	relv	phys_vec3
+00A28000	local	-36	relv	phys_vec3
 00A28110	param	4	s_	const float&
 00A28260	param	4	ps	const float
 00A28360	param	4	error_sq	float&
@@ -83440,7 +83440,7 @@ va	kind	offset	name	type
 00A285A0	param	4	s_	const phys_vec3&
 00A287E0	param	4	delta_t	const float
 00A28870	param	4	error_sq	float&
-00A28BA0	param	4294967260	relv	phys_vec3
+00A28BA0	local	-36	relv	phys_vec3
 00A28C30	param	4	s_	const float&
 00A28CE0	param	4	ps	const float
 00A28D50	param	4	error_sq	float&
@@ -97646,9 +97646,9 @@ va	kind	offset	name	type
 00B46740	param	8	totalVertCount	const int
 00B46740	param	12	boneMatrix	const DObjSkelMat* __restrict
 00B46740	param	16	dstVerts	GfxPackedVertex* __restrict
-00B471E0	param	4294967196	tmp	__m128
-00B471E0	param	4294967260	ext_val	__m64
-00B471E0	param	4294967276	a	__m64
+00B471E0	local	-20	a	__m64
+00B471E0	local	-36	ext_val	__m64
+00B471E0	local	-100	tmp	__m128
 00B47290	param	4	surf	const XSurface* __restrict
 00B47290	param	8	totalVertCount	const int
 00B47290	param	12	boneMatrix	const DObjSkelMat* __restrict
@@ -97682,7 +97682,7 @@ va	kind	offset	name	type
 00B4A460	param	16	boneMatrix	const DObjSkelMat* __restrict
 00B4A460	param	20	dstVerts	GfxPackedVertex* __restrict
 00B4A460	param	24	pVertexIndex	int* __restrict
-00B4B580	param	4294967276	a	__m64
+00B4B580	local	-20	a	__m64
 00B4B5E0	param	4	srcVerts	const GfxPackedVertex* __restric...
 00B4B5E0	param	8	vertexBlend	const unsigned short* __restrict
 00B4B5E0	param	12	vertCount	const int

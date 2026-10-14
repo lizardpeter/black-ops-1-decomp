@@ -39,6 +39,8 @@ jobs:
           gh release download "$GHIDRA_TAG" --repo NationalSecurityAgency/ghidra --pattern 'ghidra_*_PUBLIC_*.zip' --dir /tmp
           unzip -q /tmp/ghidra_*.zip -d /opt && mv /opt/ghidra_* /opt/ghidra
           sed -i 's/^#\?MAXMEM=.*/MAXMEM=13G/' /opt/ghidra/support/analyzeHeadless
+          echo 'VMARGS=-Xmx13g' >> /opt/ghidra/support/launch.properties
+          grep -n '^MAXMEM' /opt/ghidra/support/analyzeHeadless; free -g
       - name: Fetch originals
         run: python3 tools/fetch_originals.py ${{ matrix.build }} /tmp/in
       - name: Analyze with PDB and export
@@ -64,6 +66,8 @@ jobs:
 
   decompile:
     needs: analyze
+    # run each build's shards even if the other build's analysis failed
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 350
     strategy:
@@ -81,10 +85,13 @@ jobs:
           gh release download "$GHIDRA_TAG" --repo NationalSecurityAgency/ghidra --pattern 'ghidra_*_PUBLIC_*.zip' --dir /tmp
           unzip -q /tmp/ghidra_*.zip -d /opt && mv /opt/ghidra_* /opt/ghidra
           sed -i 's/^#\?MAXMEM=.*/MAXMEM=13G/' /opt/ghidra/support/analyzeHeadless
+          echo 'VMARGS=-Xmx13g' >> /opt/ghidra/support/launch.properties
+          grep -n '^MAXMEM' /opt/ghidra/support/analyzeHeadless; free -g
       - uses: actions/download-artifact@v4
         with: { name: "raw-${{ matrix.build }}", path: /tmp/raw }
       - name: Decompile shard
         run: |
+          if [ ! -s /tmp/raw/project.tar.gz ]; then echo "::error::no analysed project for ${{ matrix.build }}"; exit 1; fi
           mkdir -p /tmp/proj /tmp/out
           tar -C /tmp/proj -xzf /tmp/raw/project.tar.gz
           /opt/ghidra/support/analyzeHeadless /tmp/proj t5 \
