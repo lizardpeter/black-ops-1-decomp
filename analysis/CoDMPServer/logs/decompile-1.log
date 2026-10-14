@@ -1,12 +1,12 @@
-2026-10-14 13:25:48 INFO  (LoggingInitialization) Using log config file: jar:file:/opt/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
-2026-10-14 13:25:48 INFO  (LoggingInitialization) Using log file: /tmp/out/decompile-1.log  
-2026-10-14 13:25:48 DEBUG (GhidraObjectInputFilter) Including serial input filter: FileSystem/data/client.rmi.serial.filter  
-2026-10-14 13:25:48 INFO  (Preferences) Loading user preferences: /home/runner/.config/ghidra/ghidra_12.1.4_PUBLIC/preferences  
-2026-10-14 13:25:48 INFO  (ClassSearcher) Searching for classes...  
-2026-10-14 13:25:48 INFO  (ClassSearcher) Class search complete (504 ms)  
-2026-10-14 13:25:49 INFO  (DefaultSSLContextInitializer) Initializing SSL Context  
-2026-10-14 13:25:49 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
-2026-10-14 13:25:49 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
-2026-10-14 13:25:49 INFO  (DefaultTrustManagerFactory) Trust manager disabled, cacerts have not been set  
-2026-10-14 13:25:49 INFO  (FileCacheMaintenanceDaemon) Starting cache cleanup: /var/tmp/runner-ghidra/fscache2  
-2026-10-14 13:25:49 INFO  (FileCacheMaintenanceDaemon) Finished cache cleanup, estimated storage used: 0  
+2026-10-14 14:11:10 INFO  (LoggingInitialization) Using log config file: jar:file:/opt/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-10-14 14:11:10 INFO  (LoggingInitialization) Using log file: /tmp/out/decompile-1.log  
+2026-10-14 14:11:10 DEBUG (GhidraObjectInputFilter) Including serial input filter: FileSystem/data/client.rmi.serial.filter  
+2026-10-14 14:11:10 INFO  (Preferences) Loading user preferences: /home/runner/.config/ghidra/ghidra_12.1.4_PUBLIC/preferences  
+2026-10-14 14:11:10 INFO  (ClassSearcher) Searching for classes...  
+2026-10-14 14:11:11 INFO  (ClassSearcher) Class search complete (779 ms)  
+2026-10-14 14:11:12 INFO  (DefaultSSLContextInitializer) Initializing SSL Context  
+2026-10-14 14:11:13 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-10-14 14:11:13 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-10-14 14:11:13 INFO  (DefaultTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-10-14 14:11:13 INFO  (FileCacheMaintenanceDaemon) Starting cache cleanup: /var/tmp/runner-ghidra/fscache2  
+2026-10-14 14:11:13 INFO  (FileCacheMaintenanceDaemon) Finished cache cleanup, estimated storage used: 0  

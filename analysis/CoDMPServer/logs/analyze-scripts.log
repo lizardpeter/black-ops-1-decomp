@@ -1,1 +1,8 @@
-2026-10-14 13:18:10 INFO  PrepPdb.java> PDB set: /tmp/in/CoDMPServer.pdb  
+2026-10-14 14:04:51 INFO  PrepPdb.java> PDB set: /tmp/in/CoDMPServer.pdb  
+2026-10-14 14:10:19 INFO  ExportAll.java> exported 5000 functions  
+2026-10-14 14:10:22 INFO  ExportAll.java> exported 10000 functions  
+2026-10-14 14:10:26 INFO  ExportAll.java> exported 15000 functions  
+2026-10-14 14:10:30 INFO  ExportAll.java> exported 20000 functions  
+2026-10-14 14:10:33 INFO  ExportAll.java> exported 25000 functions  
+2026-10-14 14:10:34 INFO  ExportAll.java> functions: 28050  
+2026-10-14 14:10:37 INFO  ExportAll.java> packed project: /tmp/raw/CoDMPServer.gzf (0 bytes)  
