@@ -849,8 +849,8 @@ pathnode_t * __cdecl Actor_BadPlace_FindSafeNodeAlongPath(actor_s *self)
 
 // 008EAA30  Actor_BadPlace_AttemptEscape  (game/actor_badplace.cpp:916)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 

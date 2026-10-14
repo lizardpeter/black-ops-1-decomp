@@ -3642,10 +3642,10 @@ void __cdecl Path_MarkNodeOverlap(pathnode_t *node)
 
 // 00927A90  Path_ClaimNode  (game/pathnode.cpp:4742)
 
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Path_ClaimNode(pathnode_t *node,sentient_s *claimer)
 

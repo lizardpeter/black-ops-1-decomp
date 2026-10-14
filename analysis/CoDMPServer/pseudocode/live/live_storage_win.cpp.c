@@ -1776,12 +1776,12 @@ bool __cdecl SV_IsStatsBlobOK(void *data)
 // 0098A830  SV_DWReadClientGlobalStatsSuccess  (live/live_storage_win.cpp:2156)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl SV_DWReadClientGlobalStatsSuccess(int controllerIndex,void *data)
 

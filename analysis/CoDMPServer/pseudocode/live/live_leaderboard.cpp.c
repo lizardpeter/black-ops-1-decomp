@@ -294,8 +294,8 @@ int __cdecl LB_GetLbIndex(LbType type,LbResetPeriod resetPeriod,bool isPrestigeL
 
 // 00967910  LB_GetNumMatchesPlayedForPlayerFromLb  (live/live_leaderboard.cpp:185)
 
-/* WARNING: Enum "LbType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+/* WARNING: Enum "LbType": Some values do not have unique names */
 
 bool __cdecl LB_GetNumMatchesPlayedForPlayerFromLb(Leaderboard *lb,int controllerIndex)
 

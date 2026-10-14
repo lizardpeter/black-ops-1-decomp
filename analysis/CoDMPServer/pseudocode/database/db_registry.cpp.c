@@ -2332,8 +2332,8 @@ void __cdecl DB_InitPoolHeader(XAssetType type,int size)
 
 // 0058DC60  DB_PrintAssetName  (database/db_registry.cpp:2602)
 
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl DB_PrintAssetName(XAssetHeader header,void *data)
 
@@ -2996,8 +2996,8 @@ XAssetEntry * __cdecl DB_FindXAssetEntry(XAssetType type,char *name)
 
 // 0058E030  DB_FindXAssetDefaultHeaderInternal  (database/db_registry.cpp:3165)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
 XAssetHeader __cdecl DB_FindXAssetDefaultHeaderInternal(XAssetType type)
 

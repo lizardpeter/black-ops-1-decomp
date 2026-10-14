@@ -921,8 +921,8 @@ void __cdecl Actor_FaceEnemyOrMotionSidestep(actor_s *param_1,ai_orient_t *param
 // 00911DB0  Actor_DecideOrientation  (game/actor_orientation.cpp:764)
 
 /* WARNING: Variable defined which should be unmapped: self */
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 

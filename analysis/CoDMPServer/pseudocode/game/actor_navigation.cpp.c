@@ -706,8 +706,8 @@ void __cdecl Path_TransferLookahead(path_t *param_1,float *param_2)
 
 // 00903F40  Path_GeneratePath  (game/actor_navigation.cpp:464)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 

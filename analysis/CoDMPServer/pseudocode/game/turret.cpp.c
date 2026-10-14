@@ -2560,9 +2560,9 @@ sentient_s * __cdecl turret_findBestTarget(gentity_s *self)
 // 006A3140  turret_target_sentient  (game/turret.cpp:1919)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl turret_target_sentient(gentity_s *self,TurretInfo *turretInfo)
 

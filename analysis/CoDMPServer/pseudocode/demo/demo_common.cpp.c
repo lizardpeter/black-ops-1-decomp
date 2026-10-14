@@ -1180,8 +1180,8 @@ void __cdecl Demo_Forward_f(void)
 
 // 009B8BB0  Demo_Back_f  (demo/demo_common.cpp:956)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
@@ -2301,10 +2301,10 @@ void __cdecl Demo_DeleteSegment_f(void)
 // 009BA8F0  Demo_PreviewSegment_f  (demo/demo_common.cpp:1989)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Demo_PreviewSegment_f(void)
 

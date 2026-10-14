@@ -2450,10 +2450,10 @@ void __cdecl SV_AddModifiedStats(int clientNum)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl SV_BuildClientSnapshot(client_t *client)
 

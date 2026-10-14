@@ -847,9 +847,9 @@ int __cdecl Actor_ThreatCoveringFire(actor_s *param_1,sentient_s *param_2)
 // 00921A90  Actor_ThreatFlashed  (game/actor_threat.cpp:777)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 int __cdecl Actor_ThreatFlashed(sentient_s *param_1)
 

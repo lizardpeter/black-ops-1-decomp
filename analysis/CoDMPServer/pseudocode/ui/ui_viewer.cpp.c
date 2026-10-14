@@ -444,11 +444,11 @@ void __thiscall UIViewer::LoadMap(UIViewer *this)
 
 // 00781310  Show  (ui/ui_viewer.cpp:554)
 
+/* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "Mode": Some values do not have unique names */
 
 void __thiscall UIViewer::Show(UIViewer *this)
 

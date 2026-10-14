@@ -1183,11 +1183,11 @@ bool __cdecl Bot_ThreatSightCheck(client_t *bot,gentity_s *enemy,float fovDot)
 
 // 006FA240  Bot_UpdateThreat  (server_mp/sv_bot_mp.cpp:1084)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Bot_UpdateThreat(bot_info_t *botInfo,client_t *bot)
 
@@ -3720,11 +3720,11 @@ void __cdecl SV_BotSetScriptGoal(client_t *bot,float *goal,float goalRadius)
 // 006F9420  SV_BotClearScriptGoal  (server_mp/sv_bot_mp.cpp:2794)
 
 /* WARNING: Variable defined which should be unmapped: botInfo */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl SV_BotClearScriptGoal(client_t *bot)
 

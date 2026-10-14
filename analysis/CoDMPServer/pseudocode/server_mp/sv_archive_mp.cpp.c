@@ -170,8 +170,8 @@ int __cdecl GetFollowPlayerStateLocal(int clientNum,playerState_s *ps)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */

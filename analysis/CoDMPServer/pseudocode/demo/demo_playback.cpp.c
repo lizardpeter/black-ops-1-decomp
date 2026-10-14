@@ -3053,8 +3053,8 @@ void __cdecl Demo_ParseServerCommands(int localClientNum,msg_t *msg)
 // 009C0640  Demo_ParseSnapshot  (demo/demo_playback.cpp:2993)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
@@ -5598,8 +5598,8 @@ uchar __cdecl Demo_ParseClipCommand(int localClientNum,msg_t *msg,bool setClipPl
 // 009C5E60  Demo_WriteClipGameState  (demo/demo_playback.cpp:5796)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
@@ -6706,11 +6706,11 @@ void __cdecl Demo_WriteDemoPreviewPoint(int localClientNum,int restorePoint)
 
 // 009C80A0  Demo_RestoreDemoPreviewPoint  (demo/demo_playback.cpp:7031)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Demo_RestoreDemoPreviewPoint(int localClientNum,int restorePoint)
 

@@ -711,11 +711,11 @@ void __cdecl Actor_OrientPitchToGround(gentity_s *self,int bLerp)
 
 // 008ED980  Actor_BecomeCorpse  (game/actor_corpse.cpp:801)
 
-/* WARNING: Enum "trType_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "trType_t": Some values do not have unique names */
 
 int __cdecl Actor_BecomeCorpse(gentity_s *self)
 

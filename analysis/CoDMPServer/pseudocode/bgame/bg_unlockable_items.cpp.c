@@ -201,9 +201,9 @@ int __cdecl BG_UnlockablesCompareItemsBySortKey(void *arg0,void *arg1)
 
 // 004461A0  BG_UnlockablesBuildDefaultClasses  (bgame/bg_unlockable_items.cpp:350)
 
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
-/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl BG_UnlockablesBuildDefaultClasses(void)

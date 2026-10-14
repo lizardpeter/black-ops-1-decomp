@@ -954,9 +954,9 @@ bool __cdecl Actor_TeamMoveCheckPileup(actor_s *self,actor_s *pOtherActor)
 // 0091D4F0  Actor_GetTeamMoveStatus  (game/actor_team_move.cpp:673)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 ai_teammove_t __cdecl Actor_GetTeamMoveStatus(actor_s *bAllowGoalPileUp,bool param_2,bool param_3)
 

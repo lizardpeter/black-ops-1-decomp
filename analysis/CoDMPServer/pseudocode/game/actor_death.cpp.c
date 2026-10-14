@@ -4,10 +4,10 @@
 
 /* WARNING: Variable defined which should be unmapped: ePrevState */
 /* WARNING: Variable defined which should be unmapped: self */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
-/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl Actor_Death_Start(actor_s *param_1,ai_state_t param_2)
 

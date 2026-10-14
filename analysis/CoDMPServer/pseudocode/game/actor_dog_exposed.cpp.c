@@ -63,10 +63,10 @@ void __cdecl Actor_Dog_Exposed_Finish(actor_s *param_1,ai_state_t param_2)
 
 /* WARNING: Variable defined which should be unmapped: eNextState */
 /* WARNING: Variable defined which should be unmapped: self */
-/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl Actor_Dog_Exposed_Suspend(actor_s *param_1,ai_state_t param_2)
 
